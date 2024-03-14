@@ -23,6 +23,9 @@ export default class Player {
   /** A special town emitter that will emit events to the entire town BUT NOT to this player */
   public readonly townEmitter: TownEmitter;
 
+  /** The timestamp when the player's session started */
+  private readonly _sessionStartTime: Date;
+
   constructor(userName: string, townEmitter: TownEmitter) {
     this.location = {
       x: 0,
@@ -34,6 +37,7 @@ export default class Player {
     this._id = nanoid();
     this._sessionToken = nanoid();
     this.townEmitter = townEmitter;
+    this._sessionStartTime = new Date();
   }
 
   get userName(): string {
@@ -54,6 +58,10 @@ export default class Player {
 
   get sessionToken(): string {
     return this._sessionToken;
+  }
+
+  get sessionStartTime(): Date {
+    return this._sessionStartTime;
   }
 
   toPlayerModel(): PlayerModel {

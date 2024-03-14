@@ -23,6 +23,8 @@ import ConversationArea from './ConversationArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 /**
  * The Town class implements the logic for each town: managing the various events that
@@ -118,6 +120,12 @@ export default class Town {
   async addPlayer(userName: string, socket: CoveyTownSocket): Promise<Player> {
     const newPlayer = new Player(userName, socket.to(this._townID));
     this._players.push(newPlayer);
+
+    const userId = newPlayer.id;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastLogin: new Date() },
+    });
 
     this._connectedSockets.add(socket);
 
@@ -223,6 +231,26 @@ export default class Town {
    * @param session PlayerSession to destroy
    */
   private _removePlayer(player: Player): void {
+    const sessionEndTime = new Date();
+    const sessionDuration = (sessionEndTime.getTime() - player.sessionStartTime.getTime()) / 1000; // convert ms to s
+
+    prisma.user
+      .update({
+        where: { id: player.id },
+        data: {
+          lastLogin: sessionEndTime,
+          totalTimeSpent: {
+            increment: Math.floor(sessionDuration),
+          },
+        },
+      })
+      .then(() => {
+        console.log(`Updated time spent for user ${player.id}`);
+      })
+      .catch(err => {
+        console.error(`Error updating time spent for user ${player.id}: ${err}`);
+      });
+
     if (player.location.interactableID) {
       this._removePlayerFromInteractable(player);
     }

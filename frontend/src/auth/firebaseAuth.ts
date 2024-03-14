@@ -69,6 +69,6 @@ export const signInWithGoogle = async (): Promise<UserCredential> => {
   } catch (error) {
     const e = error as AuthError;
     console.error('Error signing in with Google:', e.message);
-    throw e; // Re-throw the error so it can be handled further up the call chain
+    throw e;
   }
 };

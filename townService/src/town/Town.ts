@@ -18,7 +18,7 @@ import {
   SocketData,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
-import { logError } from '../Utils';
+import { logError, prisma } from '../Utils';
 import ConversationArea from './ConversationArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
@@ -370,8 +370,26 @@ export default class Town {
    * Retrieves all chat messages, optionally filtered by interactableID
    * @param interactableID optional interactableID to filter by
    */
-  public getChatMessages(interactableID: string | undefined) {
-    return this._chatMessages.filter(eachMessage => eachMessage.interactableID === interactableID);
+  public async getChatMessages(interactableID: string | undefined) {
+    const messages = await prisma.chatMessage.findMany({
+      where: {
+        townId: this._townID,
+        interactableId: interactableID,
+      },
+      include: {
+        user: true,
+      },
+    });
+    return messages.map(
+      eachMessage =>
+        ({
+          author: eachMessage.user.displayName,
+          sid: eachMessage.id,
+          body: eachMessage.message,
+          dateCreated: eachMessage.sentAt,
+          interactableID: eachMessage.interactableId,
+        } as ChatMessage),
+    );
   }
 
   /**

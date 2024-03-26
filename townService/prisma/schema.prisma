@@ -42,7 +42,7 @@ model GameRecord {
   id       String   @id @default(uuid())
   userId   String
   gameId   String
-  score    Int
+  win      Boolean
   playedOn DateTime @default(now())
   user     User     @relation(fields: [userId], references: [id])
 }
@@ -57,12 +57,13 @@ model Friendship {
 }
 
 model ChatMessage {
-  id       String   @id @default(uuid())
-  senderId String
-  townId   String
-  message  String
-  sentAt   DateTime @default(now())
-  user     User     @relation(fields: [senderId], references: [id])
+  id              String   @id @default(uuid())
+  senderId        String
+  townId          String
+  interactableId  String
+  message         String
+  sentAt          DateTime @default(now())
+  user            User     @relation(fields: [senderId], references: [id])
 }
 
 model Notification {

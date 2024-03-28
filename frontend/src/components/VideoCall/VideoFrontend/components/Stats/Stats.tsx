@@ -66,8 +66,10 @@ function StatsDialog({ open, onClose }: PropsWithChildren<StatsDialogProps>) {
     // }, [])
 
     useEffect(() => {
-        townController.getUserStats().then(res => setStats(res))
-    }, [townController])
+        if(open) {
+            townController.getUserStats().then(res => setStats(res))
+        }
+    }, [townController, open])
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
@@ -76,7 +78,7 @@ function StatsDialog({ open, onClose }: PropsWithChildren<StatsDialogProps>) {
             <DialogContentText>User: {townController.userName}</DialogContentText>
             {stats ? 
                 <>
-                    <DialogContentText>First Joined: {stats.firstJoined.toLocaleDateString()}</DialogContentText>
+                    <DialogContentText>First Joined: {stats.firstJoined}</DialogContentText>
                     <DialogContentText>Time Spent Online: {stats.timeSpent}</DialogContentText>
                     {stats.gameRecords.map(record => <>
                         <DialogContentText>{record.gameName} record: {record.wins} wins, {record.losses} losses, {Math.round(record.wins/(record.losses + record.wins)*100)}% win rate</DialogContentText>

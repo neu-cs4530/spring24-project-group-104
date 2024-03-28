@@ -19,14 +19,14 @@ export type TownJoinResponse = {
 
 export type GameRecord = {
   gameName: string,
-  wins: integer,
-  losses: integer
+  wins: number,
+  losses: number
 }
 
 export type UserStats = {
   firstJoined: Date,
-  timeSpent: number?,
-  gameRecords: GameRecord[]
+  timeSpent: number | null,
+  gameRecords: Array<GameRecord>
 }
 
 export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea';
@@ -64,6 +64,7 @@ export interface PlayerLocation {
 };
 export type ChatMessage = {
   author: string;
+  authorId: string;
   sid: string;
   body: string;
   dateCreated: Date;

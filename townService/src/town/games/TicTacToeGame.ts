@@ -1,3 +1,4 @@
+import { prisma } from '../../Utils';
 import InvalidParametersError, {
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
@@ -111,6 +112,26 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
       moves: [...this.state.moves, move],
     };
     this._checkForGameEnding();
+    if (this.state.status === 'OVER') {
+      prisma.gameRecord
+        .create({
+          data: {
+            userId: this.state.o as string,
+            gameId: 'TicTacToe',
+            win: this.state.winner === this.state.o,
+          },
+        })
+        .then(res => res);
+      prisma.gameRecord
+        .create({
+          data: {
+            userId: this.state.x as string,
+            gameId: 'TicTacToe',
+            win: this.state.winner === this.state.x,
+          },
+        })
+        .then(res => res);
+    }
   }
 
   /*

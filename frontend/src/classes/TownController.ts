@@ -357,7 +357,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   public async getUserStats(): Promise<UserStats> {
-    return this._townsService.getUserStats(this._userID as string, this.sessionToken);
+    return this._townsService.userStats(this._userID as string, this.sessionToken);
   }
 
   public async getChatMessages(_interactableID: string | undefined): Promise<ChatMessage[]> {

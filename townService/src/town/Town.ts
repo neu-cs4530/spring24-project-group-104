@@ -116,8 +116,36 @@ export default class Town {
    * @param newPlayer The new player to add to the town
    */
   async addPlayer(userName: string, socket: CoveyTownSocket): Promise<Player> {
-    const newPlayer = new Player(userName, socket.to(this._townID));
+    const userRecord = await prisma.user
+      .findFirst({
+        where: {
+          displayName: userName,
+        },
+      })
+      .then(res => {
+        if (res) {
+          return res;
+        }
+        return prisma.user.create({
+          data: {
+            email: `${nanoid()}@not impelmented yet.org`,
+            displayName: userName,
+            lastLogin: new Date(),
+          },
+        });
+      });
+
+    const newPlayer = new Player(userName, userRecord.id, socket.to(this._townID));
+
     this._players.push(newPlayer);
+
+    prisma.townVisit.create({
+      data: {
+        userId: userRecord.id,
+        townId: this._townID,
+        visitedAt: new Date(),
+      },
+    });
 
     this._connectedSockets.add(socket);
 
@@ -138,6 +166,17 @@ export default class Town {
     // Set up a listener to forward all chat messages to all clients in the town
     socket.on('chatMessage', (message: ChatMessage) => {
       this._broadcastEmitter.emit('chatMessage', message);
+      prisma.chatMessage
+        .create({
+          data: {
+            senderId: message.authorId,
+            interactableId: message.interactableID,
+            townId: this._townID,
+            message: message.body,
+            sentAt: message.dateCreated,
+          },
+        })
+        .then(res => res);
       this._chatMessages.push(message);
       if (this._chatMessages.length > 200) {
         this._chatMessages.shift();

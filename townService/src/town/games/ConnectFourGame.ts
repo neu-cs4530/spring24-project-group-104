@@ -1,3 +1,4 @@
+import { prisma } from '../../Utils';
 import InvalidParametersError, {
   BOARD_POSITION_NOT_VALID_MESSAGE,
   GAME_FULL_MESSAGE,
@@ -312,6 +313,26 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
     } else if (checkForTie(newMoves)) {
       newState.winner = undefined;
       newState.status = 'OVER';
+    }
+    if (newState.status === 'OVER') {
+      prisma.gameRecord
+        .create({
+          data: {
+            userId: this.state.red as string,
+            gameId: 'ConnectFourGame',
+            win: newState.winner === this.state.red,
+          },
+        })
+        .then(res => res);
+      prisma.gameRecord
+        .create({
+          data: {
+            userId: this.state.yellow as string,
+            gameId: 'ConnectFourGame',
+            win: newState.winner === this.state.yellow,
+          },
+        })
+        .then(res => res);
     }
     this.state = newState;
   }

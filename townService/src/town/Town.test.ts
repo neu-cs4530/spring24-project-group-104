@@ -593,6 +593,7 @@ describe('Town', () => {
       const chatHandler = getEventListener(playerTestData.socket, 'chatMessage');
       const chatMessage: ChatMessage = {
         author: player.id,
+        authorId: nanoid(),
         body: 'Test message',
         dateCreated: new Date(),
         sid: 'test message id',

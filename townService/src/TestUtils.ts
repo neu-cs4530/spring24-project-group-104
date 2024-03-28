@@ -190,7 +190,7 @@ export function mockPlayer(townID: string): MockedPlayer {
  *
  */
 export function createPlayerForTesting(): Player {
-  return new Player(`username${nanoid()}`, mock<TownEmitter>());
+  return new Player(`username${nanoid()}`, nanoid(), mock<TownEmitter>());
 }
 
 /**

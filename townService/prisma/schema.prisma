@@ -60,7 +60,7 @@ model ChatMessage {
   id              String   @id @default(uuid())
   senderId        String
   townId          String
-  interactableId  String
+  interactableId  String?
   message         String
   sentAt          DateTime @default(now())
   user            User     @relation(fields: [senderId], references: [id])

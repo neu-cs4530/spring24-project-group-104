@@ -45,6 +45,7 @@ export default class TextConversation {
       sid: nanoid(),
       body: message,
       author: this._authorName,
+      authorId: this._coveyTownController.userID,
       dateCreated: new Date(),
       interactableID: this._interactableID,
     };

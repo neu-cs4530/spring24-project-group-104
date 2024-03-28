@@ -1,11 +1,14 @@
 import { ITiledMap, ITiledMapObjectLayer } from '@jonbell/tiled-map-type-guard';
 import { nanoid } from 'nanoid';
 import { BroadcastOperator } from 'socket.io';
+import { PrismaClient } from '@prisma/client';
 import InvalidParametersError from '../lib/InvalidParametersError';
 import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
 import { isViewingArea } from '../TestUtils';
+import { upsertUser, updateUser } from '../utils/prismaCRUD';
+
 import {
   ChatMessage,
   ConversationArea as ConversationAreaModel,
@@ -23,7 +26,7 @@ import ConversationArea from './ConversationArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
-import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 /**
@@ -121,11 +124,14 @@ export default class Town {
     const newPlayer = new Player(userName, socket.to(this._townID));
     this._players.push(newPlayer);
 
-    const userId = newPlayer.id;
-    await prisma.user.update({
-      where: { id: userId },
-      data: { lastLogin: new Date() },
-    });
+    // const userId = newPlayer.id;
+
+    try {
+      await upsertUser(newPlayer.id, `${newPlayer.id}@example.com`);
+      console.log(`Added/updated user ${newPlayer.id}`);
+    } catch (err) {
+      console.error(`Error handling user ${newPlayer.id}: ${err}`);
+    }
 
     this._connectedSockets.add(socket);
 
@@ -234,22 +240,29 @@ export default class Town {
     const sessionEndTime = new Date();
     const sessionDuration = (sessionEndTime.getTime() - player.sessionStartTime.getTime()) / 1000; // convert ms to s
 
-    prisma.user
-      .update({
-        where: { id: player.id },
-        data: {
-          lastLogin: sessionEndTime,
-          totalTimeSpent: {
-            increment: Math.floor(sessionDuration),
-          },
-        },
-      })
-      .then(() => {
-        console.log(`Updated time spent for user ${player.id}`);
-      })
-      .catch(err => {
-        console.error(`Error updating time spent for user ${player.id}: ${err}`);
-      });
+    try {
+      updateUser(player.id, sessionDuration);
+      console.log(`Updated time spent for user ${player.id}`);
+    } catch (err) {
+      console.error(`Error updating user ${player.id}: ${err}`);
+    }
+
+    // prisma.user
+    //   .update({
+    //     where: { id: player.id },
+    //     data: {
+    //       lastLogin: sessionEndTime,
+    //       totalTimeSpent: {
+    //         increment: Math.floor(sessionDuration),
+    //       },
+    //     },
+    //   })
+    //   .then(() => {
+    //     // console.log(`Updated time spent for user ${player.id}`);
+    //   })
+    //   .catch(err => {
+    //     console.error(`Error updating time spent for user ${player.id}: ${err}`);
+    //   });
 
     if (player.location.interactableID) {
       this._removePlayerFromInteractable(player);

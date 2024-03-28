@@ -25,6 +25,7 @@ import {
   PlayerID,
   PlayerLocation,
   TownSettingsUpdate,
+  UserStats,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
 import {
@@ -353,6 +354,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   public interactEnd(objectNoLongerInteracting: Interactable) {
     this._interactableEmitter.emit('endInteraction', objectNoLongerInteracting);
+  }
+
+  public async getUserStats(): Promise<UserStats> {
+    return this._townsService.getUserStats(this._userID as string, this.sessionToken);
   }
 
   public async getChatMessages(_interactableID: string | undefined): Promise<ChatMessage[]> {

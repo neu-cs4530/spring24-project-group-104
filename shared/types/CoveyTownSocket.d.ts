@@ -17,6 +17,18 @@ export type TownJoinResponse = {
   interactables: TypedInteractable[];
 }
 
+export type GameRecord = {
+  gameName: string,
+  wins: integer,
+  losses: integer
+}
+
+export type UserStats = {
+  firstJoined: Date,
+  timeSpent: number?,
+  gameRecords: GameRecord[]
+}
+
 export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea';
 export interface Interactable {
   type: InteractableType;

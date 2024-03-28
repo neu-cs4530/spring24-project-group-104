@@ -1,6 +1,7 @@
 import { ITiledMap, ITiledMapObjectLayer } from '@jonbell/tiled-map-type-guard';
 import { nanoid } from 'nanoid';
 import { BroadcastOperator } from 'socket.io';
+import { Friendship, PrismaClient } from '@prisma/client';
 import InvalidParametersError from '../lib/InvalidParametersError';
 import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
@@ -23,6 +24,8 @@ import ConversationArea from './ConversationArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
+
+const prisma = new PrismaClient();
 
 /**
  * The Town class implements the logic for each town: managing the various events that
@@ -215,6 +218,86 @@ export default class Town {
       }
     });
     return newPlayer;
+  }
+
+  /**
+   * A method for sending a friend request to another player.
+   *
+   * @param senderId person sending the friend request
+   * @param receiverId person receiving the friend request
+   * @returns promise of the friendship object
+   */
+  async sendFriendRequest(senderId: string, receiverId: string): Promise<Friendship | null> {
+    if (senderId === receiverId) {
+      throw new Error('Cannot send friend request to oneself.');
+    }
+    const existingRequest = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { userID1: senderId, userID2: receiverId },
+          { userID1: receiverId, userID2: senderId },
+        ],
+      },
+    });
+
+    if (existingRequest) {
+      throw new Error('Friend request already exists or already friends.');
+    }
+
+    return prisma.friendship.create({
+      data: {
+        userID1: senderId,
+        userID2: receiverId,
+      },
+    });
+  }
+
+  /**
+   * A method to represent a response to a friend request.
+   *
+   * @param requestId the id of the friend request
+   * @param accept whether to accept the friend request
+   * @returns a promise of the friendship object
+   */
+  async respondToFriendRequest(requestId: string, accept: boolean): Promise<Friendship | null> {
+    const request = await prisma.friendship.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!request) {
+      throw new Error('Friend request not found.');
+    }
+
+    if (accept) {
+      return prisma.friendship.create({
+        data: { id: requestId },
+      });
+    }
+    await prisma.friendship.delete({
+      where: { id: requestId },
+    });
+    return null;
+  }
+
+  /**
+   * A method to get a user's friend list.
+   *
+   * @param userId user id to get the friend list for
+   * @returns promise of the list of friends
+   */
+  async getFriendList(userId: string): Promise<User[]> {
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [{ userID1: userId }, { userID2: userId }],
+      },
+      include: {
+        user1: true,
+        user2: true,
+      },
+    });
+
+    // Map to the other user in each friendship pair
+    return friendships.map(f => (f.userID1 ===  ? f.user2 : f.user1));
   }
 
   /**

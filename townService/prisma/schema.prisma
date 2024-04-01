@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  displayName      String?        @unique
+  signUpDate       DateTime       @default(now())
+  lastLogin        DateTime?
+  totalTimeSpent   Int?
+  totalGamesPlayed Int?
+  gameRecords      GameRecord[]
+  friends          Friendship[]   @relation(name: "User1")
+  friendOf         Friendship[]   @relation(name: "User2")
+  chatMessages     ChatMessage[]
+  notifications    Notification[]
+  townVisits       TownVisit[]
+}
+
+model TownVisit {
+  id        String   @id @default(uuid())
+  userId    String
+  townId    String
+  visitedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model GameRecord {
+  id       String   @id @default(uuid())
+  userId   String
+  gameId   String
+  win      Boolean
+  playedOn DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  userID1   String
+  userID2   String
+  createdAt DateTime @default(now())
+  user1     User     @relation(name: "User1", fields: [userID1], references: [id])
+  user2     User     @relation(name: "User2", fields: [userID2], references: [id])
+}
+
+model ChatMessage {
+  id              String   @id @default(uuid())
+  senderId        String
+  townId          String
+  interactableId  String
+  message         String
+  sentAt          DateTime @default(now())
+  user            User     @relation(fields: [senderId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  type      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}

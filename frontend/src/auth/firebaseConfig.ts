@@ -1,8 +1,6 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
-// Covey Town Data Persistance Firebase Config
 const firebaseConfig = {
   apiKey: 'AIzaSyBRxfeLHHoWstxr53cVuWkRbrl4qV0EISc',
   authDomain: 'coveytown-data-persistence.firebaseapp.com',

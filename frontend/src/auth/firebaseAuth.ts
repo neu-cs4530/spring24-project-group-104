@@ -33,8 +33,6 @@ export const signUpWithEmailPasswordAndUsername = async (
       displayName: username,
     });
 
-    console.log('Username successfully created:', userCredential.user.displayName);
-    console.log('Email successfully created:', userCredential.user.email);
     return userCredential;
   } catch (error) {
     const e = error as AuthError;
@@ -73,7 +71,6 @@ export const logInEmailPassword = async (
 ): Promise<UserCredential> => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log('User logged in successfully. Their email is :', userCredential.user.email);
     return userCredential;
   } catch (error) {
     const e = error as AuthError;
@@ -108,7 +105,6 @@ export const signOutCurrentUser = async (): Promise<void> => {
 
   try {
     await signOut(auth);
-    console.log('User signed out successfully.');
   } catch (error) {
     console.error('Error signing out:', error);
     throw error;
@@ -128,7 +124,6 @@ export const deleteCurrentUser = async (): Promise<void> => {
     }
 
     await deleteUser(user);
-    console.log('User account deleted successfully.');
   } catch (error) {
     const e = error as AuthError;
     if (e.code === 'auth/requires-recent-login') {

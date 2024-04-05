@@ -15,19 +15,21 @@ datasource db {
 }
 
 model User {
-  id               String         @id @default(uuid())
-  email            String         @unique
-  displayName      String?        @unique
-  signUpDate       DateTime       @default(now())
+  id               String          @id @default(uuid())
+  email            String          @unique
+  displayName      String?         @unique
+  signUpDate       DateTime        @default(now())
   lastLogin        DateTime?
   totalTimeSpent   Int?
   totalGamesPlayed Int?
   gameRecords      GameRecord[]
-  friends          Friendship[]   @relation(name: "User1")
-  friendOf         Friendship[]   @relation(name: "User2")
+  friends          Friendship[]    @relation(name: "User1")
+  friendOf         Friendship[]    @relation(name: "User2")
   chatMessages     ChatMessage[]
   notifications    Notification[]
   townVisits       TownVisit[]
+  incomingRequests FriendRequest[] @relation(name: "Receiver")
+  outgoingRequests FriendRequest[] @relation(name: "Sender")
 }
 
 model TownVisit {
@@ -54,16 +56,28 @@ model Friendship {
   createdAt DateTime @default(now())
   user1     User     @relation(name: "User1", fields: [userID1], references: [id])
   user2     User     @relation(name: "User2", fields: [userID2], references: [id])
+
+  @@unique([userID1, userID2])
+}
+
+model FriendRequest {
+  id       String @id @default(uuid())
+  userID1  String
+  userID2  String
+  sender   User   @relation(name: "Sender", fields: [userID1], references: [id])
+  receiver User   @relation(name: "Receiver", fields: [userID2], references: [id])
+
+  @@unique([userID1, userID2])
 }
 
 model ChatMessage {
-  id              String   @id @default(uuid())
-  senderId        String
-  townId          String
-  interactableId  String
-  message         String
-  sentAt          DateTime @default(now())
-  user            User     @relation(fields: [senderId], references: [id])
+  id             String   @id @default(uuid())
+  senderId       String
+  townId         String
+  interactableId String
+  message        String
+  sentAt         DateTime @default(now())
+  user           User     @relation(fields: [senderId], references: [id])
 }
 
 model Notification {

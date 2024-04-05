@@ -11,5 +11,6 @@
   "eslint.workingDirectories": [
     "./frontend",
     "./townService",
-  ]
+  ],
+  "jest.runMode": "on-demand"
 }

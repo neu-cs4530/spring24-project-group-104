@@ -26,7 +26,7 @@ export default class Player {
   /** The timestamp when the player's session started */
   private readonly _sessionStartTime: Date;
 
-  constructor(userName: string, townEmitter: TownEmitter) {
+  constructor(userName: string, userId: string, townEmitter: TownEmitter) {
     this.location = {
       x: 0,
       y: 0,
@@ -34,7 +34,7 @@ export default class Player {
       rotation: 'front',
     };
     this._userName = userName;
-    this._id = nanoid();
+    this._id = userId;
     this._sessionToken = nanoid();
     this.townEmitter = townEmitter;
     this._sessionStartTime = new Date();

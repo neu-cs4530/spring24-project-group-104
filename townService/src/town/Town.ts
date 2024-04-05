@@ -121,17 +121,30 @@ export default class Town {
    * @param newPlayer The new player to add to the town
    */
   async addPlayer(userName: string, socket: CoveyTownSocket): Promise<Player> {
-    const newPlayer = new Player(userName, socket.to(this._townID));
+    const userRecord = await prisma.user
+      .findFirst({
+        where: {
+          displayName: userName,
+        },
+      })
+      .then(res => {
+        if (res) {
+          return res;
+        }
+        return prisma.user.create({
+          data: {
+            email: `${nanoid()}@not impelmented yet.org`,
+            displayName: userName,
+            lastLogin: new Date(),
+            signUpDate: new Date(),
+            totalTimeSpent: 0,
+            totalGamesPlayed: 0,
+          },
+        });
+      });
+
+    const newPlayer = new Player(userName, userRecord.id, socket.to(this._townID));
     this._players.push(newPlayer);
-
-    // const userId = newPlayer.id;
-
-    try {
-      await upsertUser(newPlayer.id, `${newPlayer.id}@example.com`);
-      console.log(`Added/updated user ${newPlayer.id}`);
-    } catch (err) {
-      console.error(`Error handling user ${newPlayer.id}: ${err}`);
-    }
 
     this._connectedSockets.add(socket);
 
@@ -144,8 +157,22 @@ export default class Town {
     // Register an event listener for the client socket: if the client disconnects,
     // clean up our listener adapter, and then let the CoveyTownController know that the
     // player's session is disconnected
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       this._removePlayer(newPlayer);
+      const sessionEndTime = new Date();
+      const sessionDuration =
+        (sessionEndTime.getTime() - newPlayer.sessionStartTime.getTime()) / 1000; // convert ms to s
+      prisma.user
+        .update({
+          where: {
+            displayName: newPlayer.userName,
+          },
+          data: {
+            lastLogin: sessionEndTime,
+            totalTimeSpent: sessionDuration,
+          },
+        })
+        .then(res => res);
       this._connectedSockets.delete(socket);
     });
 
@@ -231,39 +258,14 @@ export default class Town {
     return newPlayer;
   }
 
+  // TODO: Method if player comes back?
+
   /**
    * Destroys all data related to a player in this town.
    *
    * @param session PlayerSession to destroy
    */
   private _removePlayer(player: Player): void {
-    const sessionEndTime = new Date();
-    const sessionDuration = (sessionEndTime.getTime() - player.sessionStartTime.getTime()) / 1000; // convert ms to s
-
-    try {
-      updateUser(player.id, sessionDuration);
-      console.log(`Updated time spent for user ${player.id}`);
-    } catch (err) {
-      console.error(`Error updating user ${player.id}: ${err}`);
-    }
-
-    // prisma.user
-    //   .update({
-    //     where: { id: player.id },
-    //     data: {
-    //       lastLogin: sessionEndTime,
-    //       totalTimeSpent: {
-    //         increment: Math.floor(sessionDuration),
-    //       },
-    //     },
-    //   })
-    //   .then(() => {
-    //     // console.log(`Updated time spent for user ${player.id}`);
-    //   })
-    //   .catch(err => {
-    //     console.error(`Error updating time spent for user ${player.id}: ${err}`);
-    //   });
-
     if (player.location.interactableID) {
       this._removePlayerFromInteractable(player);
     }

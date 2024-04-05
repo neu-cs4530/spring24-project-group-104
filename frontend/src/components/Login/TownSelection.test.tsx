@@ -415,7 +415,6 @@ describe('Town Selection', () => {
               const row = rows.find(each => within(each).queryByText(town.townID));
               if (row) {
                 const button = within(row).getByRole('button');
-                const username = nanoid();
                 // act(() => {
                 //   fireEvent.change(userNameField, { target: { value: username } });
                 // });
@@ -456,7 +455,6 @@ describe('Town Selection', () => {
               const row = rows.find(each => within(each).queryByText(town.townID));
               if (row) {
                 const button = within(row).getByRole('button');
-                const username = nanoid();
                 // act(() => {
                 //   fireEvent.change(userNameField, { target: { value: username } });
                 // });

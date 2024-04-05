@@ -123,12 +123,16 @@ export default class Town {
     const newPlayer = new Player(userName, socket.to(this._townID), uid);
     this._players.push(newPlayer);
 
-    prisma.townVisit.create({
-      data: {
-        userId: userRecord.id,
-        townId: this._townID,
-        visitedAt: new Date(),
-      },
+    await newPlayer.registerPlayerInDatabase().then(res => {
+      prisma.townVisit
+        .create({
+          data: {
+            userId: res.id,
+            townId: this._townID,
+            visitedAt: new Date(),
+          },
+        })
+        .then(i => i);
     });
 
     this._connectedSockets.add(socket);

@@ -47,6 +47,14 @@ model GameRecord {
   user     User     @relation(fields: [userId], references: [id])
 }
 
+model FriendRequest {
+  id              String   @id @default(uuid())
+  accepted        Boolean
+  userID1         String
+  userID2         String
+  createdAt       DateTime @default(now())
+}
+
 model Friendship {
   id        String   @id @default(uuid())
   userID1   String

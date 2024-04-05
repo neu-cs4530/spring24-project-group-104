@@ -309,7 +309,6 @@ describe('Town Selection', () => {
       townIDToJoinField = renderData.getByPlaceholderText(
         'ID of town to join, or select from list',
       ) as HTMLInputElement;
-      // userNameField = renderData.getByPlaceholderText('Your name') as HTMLInputElement;
       joinTownByIDButton = renderData.getByTestId('joinTownByIDButton');
       newTownIsPublicCheckbox = renderData.getByLabelText('Publicly Listed') as HTMLInputElement;
       newTownNameField = renderData.getByPlaceholderText('New Town Name') as HTMLInputElement;
@@ -318,10 +317,6 @@ describe('Town Selection', () => {
     describe('Joining existing towns', () => {
       describe('Joining an existing town by ID', () => {
         const joinTownWithOptions = async (params: { coveyTownID: string; userName: string }) => {
-          // fireEvent.change(userNameField, { target: { value: params.userName } });
-          // await waitFor(() => {
-          //   expect(userNameField.value).toBe(params.userName);
-          // });
           fireEvent.change(townIDToJoinField, { target: { value: params.coveyTownID } });
           await waitFor(() => expect(townIDToJoinField.value).toBe(params.coveyTownID));
           userEvent.click(joinTownByIDButton);
@@ -357,13 +352,6 @@ describe('Town Selection', () => {
             coveyTownID,
             userName: '',
           });
-          // await waitFor(() =>
-          //   expect(mockToast).toBeCalledWith({
-          //     description: 'Please select a username',
-          //     title: 'Unable to join town',
-          //     status: 'error',
-          //   }),
-          // );
         });
         it('displays an error toast "Unable to join town" if the TownID is empty', async () => {
           const userName = nanoid();
@@ -415,12 +403,6 @@ describe('Town Selection', () => {
               const row = rows.find(each => within(each).queryByText(town.townID));
               if (row) {
                 const button = within(row).getByRole('button');
-                // act(() => {
-                //   fireEvent.change(userNameField, { target: { value: username } });
-                // });
-                // await waitFor(() => {
-                //   expect(userNameField.value).toBe(username);
-                // });
                 act(() => {
                   fireEvent.click(button);
                 });
@@ -455,12 +437,6 @@ describe('Town Selection', () => {
               const row = rows.find(each => within(each).queryByText(town.townID));
               if (row) {
                 const button = within(row).getByRole('button');
-                // act(() => {
-                //   fireEvent.change(userNameField, { target: { value: username } });
-                // });
-                // await waitFor(() => {
-                //   expect(userNameField.value).toBe(username);
-                // });
                 act(() => {
                   fireEvent.click(button);
                 });
@@ -482,10 +458,6 @@ describe('Town Selection', () => {
         roomPassword?: string;
         errorMessage?: string;
       }) => {
-        // fireEvent.change(userNameField, { target: { value: params.userName } });
-        // await waitFor(() => {
-        //   expect(userNameField.value).toBe(params.userName);
-        // });
         fireEvent.change(newTownNameField, { target: { value: params.townName } });
         await waitFor(() => expect(newTownNameField.value).toBe(params.townName));
         if (params.togglePublicBox) {
@@ -515,13 +487,6 @@ describe('Town Selection', () => {
               townName: nanoid(),
               errorMessage: 'FAIL',
             });
-            // await waitFor(() =>
-            //   expect(mockToast).toBeCalledWith({
-            //     title: 'Unable to create town',
-            //     description: 'Please select a username before creating a town',
-            //     status: 'error',
-            //   }),
-            // );
           });
           it('displays an error toast "Unable to create town" if the newTownName is empty', async () => {
             await createTownWithOptions({

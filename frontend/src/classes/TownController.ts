@@ -1,9 +1,8 @@
 import assert from 'assert';
-import { generateKey } from 'crypto';
 import EventEmitter from 'events';
 import _ from 'lodash';
 import { nanoid } from 'nanoid';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
@@ -50,6 +49,7 @@ const SOCKET_COMMAND_TIMEOUT_MS = 5000;
 
 export type ConnectionProperties = {
   userName: string;
+  uid: string;
   townID: string;
   loginController: LoginController;
 };
@@ -214,9 +214,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   private _interactableEmitter = new EventEmitter();
 
-  public constructor({ userName, townID, loginController }: ConnectionProperties) {
+  /**
+   * The user ID of the player whose browser created this TownController.
+   */
+  private _uid: string;
+
+  public constructor({ userName, uid, townID, loginController }: ConnectionProperties) {
     super();
     this._townID = townID;
+    this._uid = uid;
     this._userName = userName;
     this._loginController = loginController;
 
@@ -229,7 +235,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
     const url = process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL;
     assert(url);
-    this._socket = io(url, { auth: { userName, townID } });
+    this._socket = io(url, { auth: { userName, uid, townID: townID } });
     this._townsService = new TownsServiceClient({ BASE: url }).towns;
     this._usersService = new TownsServiceClient({ BASE: url }).users;
     this.registerSocketListeners();

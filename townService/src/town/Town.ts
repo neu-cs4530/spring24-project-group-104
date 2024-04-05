@@ -115,28 +115,12 @@ export default class Town {
    *
    * @param newPlayer The new player to add to the town
    */
-  async addPlayer(userName: string, socket: CoveyTownSocket): Promise<Player> {
-    const userRecord = await prisma.user
-      .findFirst({
-        where: {
-          displayName: userName,
-        },
-      })
-      .then(res => {
-        if (res) {
-          return res;
-        }
-        return prisma.user.create({
-          data: {
-            email: `${nanoid()}@not impelmented yet.org`,
-            displayName: userName,
-            lastLogin: new Date(),
-          },
-        });
-      });
-
-    const newPlayer = new Player(userName, userRecord.id, socket.to(this._townID));
-
+  async addPlayer(
+    userName: string,
+    socket: CoveyTownSocket,
+    uid: string = nanoid(),
+  ): Promise<Player> {
+    const newPlayer = new Player(userName, socket.to(this._townID), uid);
     this._players.push(newPlayer);
 
     prisma.townVisit.create({

@@ -23,7 +23,7 @@ export default class Player {
   /** A special town emitter that will emit events to the entire town BUT NOT to this player */
   public readonly townEmitter: TownEmitter;
 
-  constructor(userName: string, userId: string, townEmitter: TownEmitter) {
+  constructor(userName: string, townEmitter: TownEmitter, uid: string = nanoid()) {
     this.location = {
       x: 0,
       y: 0,
@@ -31,7 +31,7 @@ export default class Player {
       rotation: 'front',
     };
     this._userName = userName;
-    this._id = userId;
+    this._id = uid;
     this._sessionToken = nanoid();
     this.townEmitter = townEmitter;
   }

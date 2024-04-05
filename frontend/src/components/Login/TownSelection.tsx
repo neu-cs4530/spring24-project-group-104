@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import assert from 'assert';
 import {
   Box,
@@ -25,8 +25,12 @@ import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 
-export default function TownSelection(): JSX.Element {
-  const [userName, setUserName] = useState<string>('');
+interface TownSelectionProps {
+  userName: string;
+  uid: string;
+}
+
+export default function TownSelection({ userName, uid }: TownSelectionProps): JSX.Element {
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -38,15 +42,21 @@ export default function TownSelection(): JSX.Element {
 
   const toast = useToast();
 
+  const isMounted = useRef(true);
+
   const updateTownListings = useCallback(() => {
     townsService.listTowns().then(towns => {
-      setCurrentPublicTowns(towns.sort((a, b) => b.currentOccupancy - a.currentOccupancy));
+      if (isMounted.current) {
+        setCurrentPublicTowns(towns.sort((a, b) => b.currentOccupancy - a.currentOccupancy));
+      }
     });
   }, [townsService]);
+
   useEffect(() => {
     updateTownListings();
     const timer = setInterval(updateTownListings, 2000);
     return () => {
+      isMounted.current = false;
       clearInterval(timer);
     };
   }, [updateTownListings]);
@@ -97,6 +107,7 @@ export default function TownSelection(): JSX.Element {
         setIsJoining(true);
         const newController = new TownController({
           userName,
+          uid,
           townID: coveyRoomID,
           loginController,
         });
@@ -133,18 +144,10 @@ export default function TownSelection(): JSX.Element {
         }
       }
     },
-    [setTownController, userName, toast, videoConnect, loginController],
+    [userName, uid, loginController, videoConnect, setTownController, toast],
   );
 
   const handleCreate = async () => {
-    if (!userName || userName.length === 0) {
-      toast({
-        title: 'Unable to create town',
-        description: 'Please select a username before creating a town',
-        status: 'error',
-      });
-      return;
-    }
     if (!newTownName || newTownName.length === 0) {
       toast({
         title: 'Unable to create town',
@@ -240,19 +243,8 @@ export default function TownSelection(): JSX.Element {
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
             <Heading as='h2' size='lg'>
-              Select a username
+              Welcome, {userName}
             </Heading>
-
-            <FormControl>
-              <FormLabel htmlFor='name'>Name</FormLabel>
-              <Input
-                autoFocus
-                name='name'
-                placeholder='Your name'
-                value={userName}
-                onChange={event => setUserName(event.target.value)}
-              />
-            </FormControl>
           </Box>
           <Box borderWidth='1px' borderRadius='lg'>
             <Heading p='4' as='h2' size='lg'>

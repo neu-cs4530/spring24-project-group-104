@@ -24,7 +24,7 @@ export type GameRecord = {
 }
 
 export type UserStats = {
-  firstJoined: Date,
+  firstJoined: string,
   timeSpent: number | null,
   gameRecords: Array<GameRecord>
 }

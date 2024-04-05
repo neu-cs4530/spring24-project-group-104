@@ -30,7 +30,7 @@ export class UsersController extends Controller {
       throw new InvalidParametersError('Invalid values specified');
     }
     return {
-      firstJoined: userRecords.signUpDate,
+      firstJoined: userRecords.signUpDate.toDateString(),
       timeSpent: userRecords.totalTimeSpent,
       gameRecords: userRecords.gameRecords
         .reduce((acc: Array<string>, record: GameRecord) => {

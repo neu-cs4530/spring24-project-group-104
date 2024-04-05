@@ -93,6 +93,7 @@ function DebugApp(): JSX.Element {
       assert(townID);
       const newTownController = new TownController({
         townID,
+        uid: nanoid(),
         loginController: {
           setTownController: () => {},
           townsService,

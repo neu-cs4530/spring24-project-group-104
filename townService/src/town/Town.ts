@@ -7,6 +7,8 @@ import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
 import { isViewingArea } from '../TestUtils';
+import { upsertUser, updateUser } from '../utils/prismaCRUD';
+
 import {
   ChatMessage,
   ConversationArea as ConversationAreaModel,
@@ -119,7 +121,29 @@ export default class Town {
    * @param newPlayer The new player to add to the town
    */
   async addPlayer(userName: string, socket: CoveyTownSocket): Promise<Player> {
-    const newPlayer = new Player(userName, socket.to(this._townID));
+    const userRecord = await prisma.user
+      .findFirst({
+        where: {
+          displayName: userName,
+        },
+      })
+      .then(res => {
+        if (res) {
+          return res;
+        }
+        return prisma.user.create({
+          data: {
+            email: `${nanoid()}@not impelmented yet.org`,
+            displayName: userName,
+            lastLogin: new Date(),
+            signUpDate: new Date(),
+            totalTimeSpent: 0,
+            totalGamesPlayed: 0,
+          },
+        });
+      });
+
+    const newPlayer = new Player(userName, userRecord.id, socket.to(this._townID));
     this._players.push(newPlayer);
 
     this._connectedSockets.add(socket);
@@ -133,8 +157,22 @@ export default class Town {
     // Register an event listener for the client socket: if the client disconnects,
     // clean up our listener adapter, and then let the CoveyTownController know that the
     // player's session is disconnected
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       this._removePlayer(newPlayer);
+      const sessionEndTime = new Date();
+      const sessionDuration =
+        (sessionEndTime.getTime() - newPlayer.sessionStartTime.getTime()) / 1000; // convert ms to s
+      prisma.user
+        .update({
+          where: {
+            displayName: newPlayer.userName,
+          },
+          data: {
+            lastLogin: sessionEndTime,
+            totalTimeSpent: sessionDuration,
+          },
+        })
+        .then(res => res);
       this._connectedSockets.delete(socket);
     });
 
@@ -219,6 +257,8 @@ export default class Town {
     });
     return newPlayer;
   }
+
+  // TODO: Method if player comes back?
 
   /**
    * A method for sending a friend request to another player.

@@ -49,5 +49,9 @@
         "frontend/src/components/Town/interactables/ConnectFour/ConnectFourBoard.tsx",
         "frontend/src/components/Town/interactables/GamesArea.tsx",
         "frontend/src/components/SocialSidebar/InteractableAreasList.tsx"
-    ]
+    ],
+    "type": "module",
+    "transform": {
+        "\\.js$": "<rootDir>/node_modules/babel-jest"
+      }
 }

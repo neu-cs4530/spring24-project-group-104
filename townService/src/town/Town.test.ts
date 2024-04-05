@@ -355,7 +355,11 @@ describe('Town', () => {
   beforeEach(async () => {
     town = new Town(nanoid(), false, nanoid(), townEmitter);
     playerTestData = mockPlayer(town.townID);
-    player = await town.addPlayer(playerTestData.userName, playerTestData.socket);
+    player = await town.addPlayer(
+      playerTestData.userName,
+      playerTestData.socket,
+      playerTestData.playerId,
+    );
     playerTestData.player = player;
     playerID = player.id;
     // Set this dummy player to be off the map so that they do not show up in conversation areas
@@ -592,8 +596,8 @@ describe('Town', () => {
     it('Forwards chat messages to all players in the same town', async () => {
       const chatHandler = getEventListener(playerTestData.socket, 'chatMessage');
       const chatMessage: ChatMessage = {
-        author: player.id,
-        authorId: nanoid(),
+        author: player.userName,
+        authorId: player.id,
         body: 'Test message',
         dateCreated: new Date(),
         sid: 'test message id',

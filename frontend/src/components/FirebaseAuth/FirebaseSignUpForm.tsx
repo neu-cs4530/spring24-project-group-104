@@ -53,7 +53,7 @@ export default function FirebaseSignUpForm({
         });
       }
     },
-    [email, password, username, toast],
+    [username, email, password, toast, onLoginSuccess],
   );
   const toggleForm = () => setShowForm(!showForm);
 

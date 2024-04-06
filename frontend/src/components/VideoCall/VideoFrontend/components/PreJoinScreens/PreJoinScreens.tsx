@@ -6,12 +6,13 @@ import RoomNameScreen from './RoomNameScreen/RoomNameScreen';
 import { useAppState } from '../../state';
 import { useParams } from 'react-router-dom';
 import useVideoContext from '../../hooks/useVideoContext/useVideoContext';
-import { Box, Button, Heading, Text } from '@chakra-ui/react';
+import { Box, Divider, Flex, Heading, Text } from '@chakra-ui/react';
 import TownSelection from '../../../../Login/TownSelection';
 import { TownJoinResponse } from '../../../../../types/CoveyTownSocket';
-import FirebaseSignUpForm from '../../../../FirebaseAuth/FirebaseSignUpForm';
-import FirebaseLoginForm from '../../../../FirebaseAuth/FirebaseLogInForm';
+import SignUpForm from '../../../../Auth/SignUpForm';
+import LogInForm from '../../../../Auth/LogInForm';
 import { setuid } from 'process';
+import GoogleAuthButton from '../../../../Auth/GoogleAuthButton';
 
 
 export enum Steps {
@@ -49,16 +50,32 @@ export default function PreJoinScreens() {
  let content;
  if (!isLoggedIn) {
   content = (
-    <Box>
-      <FirebaseSignUpForm onLoginSuccess={handleLoginSuccess} />
-      <FirebaseLoginForm onLoginSuccess={handleLoginSuccess} />
+  <Box p={4} maxW="md" mx="auto" mt="5%">
+      <Heading as="h3" size="lg" textAlign="center" mb={6}>
+        Create an Account or Log In!
+      </Heading>
+      <Flex direction="column" gap={6}>
+        <SignUpForm onLoginSuccess={handleLoginSuccess} />
+        <Flex align="center">
+          <Divider />
+          <Text px={2}>or</Text>
+          <Divider />
+        </Flex>
+        <LogInForm onLoginSuccess={handleLoginSuccess} />
+        <Flex align="center">
+          <Divider />
+          <Text px={2}>or</Text>
+          <Divider />
+        </Flex>
+        <GoogleAuthButton onLoginSuccess={handleLoginSuccess} />
+      </Flex>
     </Box>
   );
 } else {
   content = (
     <Box>
       <DeviceSelectionScreen />
-      <TownSelection userName={username} uid={uid} />
+      <TownSelection userName={username} setUsername={setUsername} uid={uid} />
     </Box>
   );
 }

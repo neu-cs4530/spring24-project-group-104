@@ -13,13 +13,11 @@ import {
 } from '@chakra-ui/react';
 import { signUpWithEmailPasswordAndUsername } from '../../auth/firebaseAuth';
 
-interface FirebaseSignUpFormProps {
+interface SignUpFormProps {
   onLoginSuccess: (username: string, uid: string) => void;
 }
 
-export default function FirebaseSignUpForm({
-  onLoginSuccess,
-}: FirebaseSignUpFormProps): JSX.Element {
+export default function SignUpForm({ onLoginSuccess }: SignUpFormProps): JSX.Element {
   const [email, setEmail] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');

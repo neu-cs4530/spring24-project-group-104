@@ -48,7 +48,7 @@ jobs:
           done
 
       - name: Migrate Prisma schema
-        run: cd townService; npx prisma migrate dev
+        run: cd townService; npm install && npx prisma migrate dev
 
       - name: Build and test backend service
         env: # Pass the Twilio secrets into environmental variables for the backend tests to use

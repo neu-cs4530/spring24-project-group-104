@@ -380,7 +380,11 @@ describe('Town', () => {
     it('should use the townID and player ID properties when requesting a video token', async () => {
       const newPlayer = mockPlayer(town.townID);
       mockTwilioVideo.getTokenForTown.mockClear();
-      const newPlayerObj = await town.addPlayer(newPlayer.userName, newPlayer.socket);
+      const newPlayerObj = await town.addPlayer(
+        newPlayer.userName,
+        newPlayer.socket,
+        newPlayer.playerId,
+      );
 
       expect(mockTwilioVideo.getTokenForTown).toBeCalledTimes(1);
       expect(mockTwilioVideo.getTokenForTown).toBeCalledWith(town.townID, newPlayerObj.id);
@@ -435,7 +439,7 @@ describe('Town', () => {
           expect(town.addViewingArea(newArea)).toBe(true);
           secondPlayer = mockPlayer(town.townID);
           mockTwilioVideo.getTokenForTown.mockClear();
-          await town.addPlayer(secondPlayer.userName, secondPlayer.socket);
+          await town.addPlayer(secondPlayer.userName, secondPlayer.socket, secondPlayer.playerId);
 
           newArea.elapsedTimeSec = 100;
           newArea.isPlaying = false;
@@ -841,7 +845,11 @@ describe('Town', () => {
       });
       it('Adds a player to a new interactable and sets their conversation label, if they move into it', async () => {
         const newPlayer = mockPlayer(town.townID);
-        const newPlayerObj = await town.addPlayer(newPlayer.userName, newPlayer.socket);
+        const newPlayerObj = await town.addPlayer(
+          newPlayer.userName,
+          newPlayer.socket,
+          newPlayer.playerId,
+        );
         newPlayer.moveTo(51, 121);
 
         // Check that the player's location was updated

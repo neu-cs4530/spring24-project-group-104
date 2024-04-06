@@ -13,6 +13,7 @@ import ToggleChatButton from '../Buttons/ToggleChatButton/ToggleChatButton';
 import ToggleVideoButton from '../Buttons/ToggleVideoButton/ToggleVideoButton';
 import ToggleScreenShareButton from '../Buttons/ToogleScreenShareButton/ToggleScreenShareButton';
 import TownSettings from '../../../../Login/TownSettings';
+import Stats from '../Stats/Stats';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -82,10 +83,11 @@ export default function MenuBar() {
         <Grid container justifyContent="space-around" alignItems="center">
           <Grid item>
             <Grid container justifyContent="center">
-            {process.env.REACT_APP_DISABLE_TWILIO_CONVERSATIONS !== 'true' && <ToggleChatButton />}
+              {process.env.REACT_APP_DISABLE_TWILIO_CONVERSATIONS !== 'true' && <ToggleChatButton />}
               <ToggleAudioButton disabled={isReconnecting} />
               <ToggleVideoButton disabled={isReconnecting} />
               {!isSharingScreen && !isMobile && <ToggleScreenShareButton disabled={isReconnecting} />}
+              <Stats/>
               <Hidden smDown>
                 <Menu />
                 <TownSettings />

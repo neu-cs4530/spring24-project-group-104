@@ -185,7 +185,7 @@ export class TownsController extends Controller {
     if (!player) {
       throw new InvalidParametersError('Invalid values specified');
     }
-    const messages = town.getChatMessages(interactableID);
+    const messages = await town.getChatMessages(interactableID);
     return messages;
   }
 

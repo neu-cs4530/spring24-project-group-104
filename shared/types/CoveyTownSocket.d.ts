@@ -17,6 +17,18 @@ export type TownJoinResponse = {
   interactables: TypedInteractable[];
 }
 
+export type GameRecord = {
+  gameName: string,
+  wins: number,
+  losses: number
+}
+
+export type UserStats = {
+  firstJoined: string,
+  timeSpent: number | null,
+  gameRecords: Array<GameRecord>
+}
+
 export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea';
 export interface Interactable {
   type: InteractableType;
@@ -52,6 +64,7 @@ export interface PlayerLocation {
 };
 export type ChatMessage = {
   author: string;
+  authorId: string;
   sid: string;
   body: string;
   dateCreated: Date;

@@ -21,6 +21,7 @@ import {
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import Town from './Town';
+import { prisma } from '../Utils';
 
 const mockTwilioVideo = mockDeep<TwilioVideo>();
 jest.spyOn(TwilioVideo, 'getInstance').mockReturnValue(mockTwilioVideo);
@@ -355,7 +356,11 @@ describe('Town', () => {
   beforeEach(async () => {
     town = new Town(nanoid(), false, nanoid(), townEmitter);
     playerTestData = mockPlayer(town.townID);
-    player = await town.addPlayer(playerTestData.userName, playerTestData.socket);
+    player = await town.addPlayer(
+      playerTestData.userName,
+      playerTestData.socket,
+      playerTestData.playerId,
+    );
     playerTestData.player = player;
     playerID = player.id;
     // Set this dummy player to be off the map so that they do not show up in conversation areas
@@ -376,7 +381,11 @@ describe('Town', () => {
     it('should use the townID and player ID properties when requesting a video token', async () => {
       const newPlayer = mockPlayer(town.townID);
       mockTwilioVideo.getTokenForTown.mockClear();
-      const newPlayerObj = await town.addPlayer(newPlayer.userName, newPlayer.socket);
+      const newPlayerObj = await town.addPlayer(
+        newPlayer.userName,
+        newPlayer.socket,
+        newPlayer.playerId,
+      );
 
       expect(mockTwilioVideo.getTokenForTown).toBeCalledTimes(1);
       expect(mockTwilioVideo.getTokenForTown).toBeCalledWith(town.townID, newPlayerObj.id);
@@ -391,6 +400,16 @@ describe('Town', () => {
       expectedEvents.forEach(eachEvent =>
         expect(getEventListener(playerTestData.socket, eachEvent)).toBeDefined(),
       );
+    });
+
+    it('should create a townVisit record in the database each time a player is added to the town', async () => {
+      const player2 = await town.addPlayer(nanoid(), mockDeep(), nanoid());
+      const visit = await prisma.townVisit.findFirst({
+        where: {
+          userId: player2.id,
+        },
+      });
+      expect(visit).toBeDefined();
     });
     describe('[T1] interactableUpdate callback', () => {
       let interactableUpdateHandler: (update: ViewingAreaModel) => void;
@@ -431,7 +450,7 @@ describe('Town', () => {
           expect(town.addViewingArea(newArea)).toBe(true);
           secondPlayer = mockPlayer(town.townID);
           mockTwilioVideo.getTokenForTown.mockClear();
-          await town.addPlayer(secondPlayer.userName, secondPlayer.socket);
+          await town.addPlayer(secondPlayer.userName, secondPlayer.socket, secondPlayer.playerId);
 
           newArea.elapsedTimeSec = 100;
           newArea.isPlaying = false;
@@ -592,7 +611,8 @@ describe('Town', () => {
     it('Forwards chat messages to all players in the same town', async () => {
       const chatHandler = getEventListener(playerTestData.socket, 'chatMessage');
       const chatMessage: ChatMessage = {
-        author: player.id,
+        author: player.userName,
+        authorId: player.id,
         body: 'Test message',
         dateCreated: new Date(),
         sid: 'test message id',
@@ -836,7 +856,11 @@ describe('Town', () => {
       });
       it('Adds a player to a new interactable and sets their conversation label, if they move into it', async () => {
         const newPlayer = mockPlayer(town.townID);
-        const newPlayerObj = await town.addPlayer(newPlayer.userName, newPlayer.socket);
+        const newPlayerObj = await town.addPlayer(
+          newPlayer.userName,
+          newPlayer.socket,
+          newPlayer.playerId,
+        );
         newPlayer.moveTo(51, 121);
 
         // Check that the player's location was updated
@@ -871,6 +895,95 @@ describe('Town', () => {
       expect(townEmitter.emit).toBeCalledWith('townSettingsUpdated', {
         isPubliclyListed: expected,
       });
+    });
+  });
+
+  describe('getAllChatMessages', () => {
+    it('Should return all chat messages for a given town', async () => {
+      const chatMessage1: ChatMessage = {
+        author: player.userName,
+        authorId: player.id,
+        body: 'Test message',
+        dateCreated: new Date(),
+        interactableID: undefined,
+        sid: 'test message id',
+      };
+      const chatMessage2: ChatMessage = {
+        author: player.userName,
+        authorId: player.id,
+        body: 'Test message TWO',
+        dateCreated: new Date(),
+        interactableID: undefined,
+        sid: 'test message id',
+      };
+      await town.addChatMessage(chatMessage1);
+      await town.addChatMessage(chatMessage2);
+
+      const messages = await town.getChatMessages(undefined);
+      expect(messages.length).toBe(2);
+      expect(messages).toContainEqual(chatMessage1);
+    });
+
+    it('Should return all chat messages for a given interactable and none for other interactables', async () => {
+      const interactableID1 = 'interactable1';
+      const interactableID2 = 'interactable2';
+
+      const chatMessage1: ChatMessage = {
+        author: player.userName,
+        authorId: player.id,
+        body: 'Test message 1',
+        dateCreated: new Date(),
+        interactableID: interactableID1,
+        sid: 'test message id 1',
+      };
+
+      const chatMessage2: ChatMessage = {
+        author: player.userName,
+        authorId: player.id,
+        body: 'Test message 2',
+        dateCreated: new Date(),
+        interactableID: interactableID2,
+        sid: 'test message id 2',
+      };
+
+      await town.addChatMessage(chatMessage1);
+      await town.addChatMessage(chatMessage2);
+      const messages1 = await town.getChatMessages(interactableID1);
+      expect(messages1.length).toBe(1);
+      expect(messages1).toContainEqual(chatMessage1);
+
+      const messages2 = await town.getChatMessages(interactableID2);
+      expect(messages2.length).toBe(1);
+      expect(messages2).toContainEqual(chatMessage2);
+    });
+
+    it('Should not return interactable messages when interactableID is not provided', async () => {
+      const interactableID1 = 'interactable1';
+      const interactableID2 = 'interactable2';
+
+      const chatMessage1: ChatMessage = {
+        author: player.userName,
+        authorId: player.id,
+        body: 'Test message 1',
+        dateCreated: new Date(),
+        interactableID: interactableID1,
+        sid: 'test message id 1',
+      };
+
+      const chatMessage2: ChatMessage = {
+        author: player.userName,
+        authorId: player.id,
+        body: 'Test message 2',
+        dateCreated: new Date(),
+        interactableID: interactableID2,
+        sid: 'test message id 2',
+      };
+
+      await town.addChatMessage(chatMessage1);
+      await town.addChatMessage(chatMessage2);
+
+      const messages = await town.getChatMessages(undefined);
+      expect(messages.length).toBe(0);
     });
   });
 });

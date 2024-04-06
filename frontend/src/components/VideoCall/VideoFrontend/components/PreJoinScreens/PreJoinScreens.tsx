@@ -6,7 +6,7 @@ import RoomNameScreen from './RoomNameScreen/RoomNameScreen';
 import { useAppState } from '../../state';
 import { useParams } from 'react-router-dom';
 import useVideoContext from '../../hooks/useVideoContext/useVideoContext';
-import { Box, Button, Heading, Text } from '@chakra-ui/react';
+import { Box, Divider, Flex, Heading, Text } from '@chakra-ui/react';
 import TownSelection from '../../../../Login/TownSelection';
 import { TownJoinResponse } from '../../../../../types/CoveyTownSocket';
 import SignUpForm from '../../../../Auth/SignUpForm';
@@ -50,10 +50,25 @@ export default function PreJoinScreens() {
  let content;
  if (!isLoggedIn) {
   content = (
-    <Box>
-      <SignUpForm onLoginSuccess={handleLoginSuccess} />
-      <LogInForm onLoginSuccess={handleLoginSuccess} />
-      <GoogleAuthButton onLoginSuccess={handleLoginSuccess} />
+  <Box p={4} maxW="md" mx="auto" mt="5%">
+      <Heading as="h3" size="lg" textAlign="center" mb={6}>
+        Create an Account or Log In!
+      </Heading>
+      <Flex direction="column" gap={6}>
+        <SignUpForm onLoginSuccess={handleLoginSuccess} />
+        <Flex align="center">
+          <Divider />
+          <Text px={2}>or</Text>
+          <Divider />
+        </Flex>
+        <LogInForm onLoginSuccess={handleLoginSuccess} />
+        <Flex align="center">
+          <Divider />
+          <Text px={2}>or</Text>
+          <Divider />
+        </Flex>
+        <GoogleAuthButton onLoginSuccess={handleLoginSuccess} />
+      </Flex>
     </Box>
   );
 } else {

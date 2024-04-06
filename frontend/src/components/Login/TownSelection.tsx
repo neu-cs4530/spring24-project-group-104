@@ -250,14 +250,14 @@ export default function TownSelection({
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
             <Heading as='h2' size='lg' textAlign='center'>
-              Welcome,{' '} 
+              Welcome,{' '}
               <Text as='span' color='blue.500'>
                 {userName}
               </Text>
             </Heading>
           </Box>
           <UsernameUpdatePopup userName={userName} setUserName={setUsername} />
-          <Box borderWidth='1px' borderRadius='lg'>
+          <Box mt={4} borderWidth='1px' borderRadius='lg'>
             <Heading p='4' as='h2' size='lg'>
               Create a New Town
             </Heading>

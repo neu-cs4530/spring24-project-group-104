@@ -67,7 +67,7 @@ export default function UsernameUpdatePopup({
 
   return (
     <>
-      <Button onClick={onOpen} mt='4'>
+      <Button onClick={onOpen} mt={4} mb={4}>
         Update Username
       </Button>
 

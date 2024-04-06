@@ -115,11 +115,7 @@ export default class Town {
    *
    * @param newPlayer The new player to add to the town
    */
-  async addPlayer(
-    userName: string,
-    socket: CoveyTownSocket,
-    uid: string = nanoid(),
-  ): Promise<Player> {
+  async addPlayer(userName: string, socket: CoveyTownSocket, uid: string): Promise<Player> {
     const newPlayer = new Player(userName, socket.to(this._townID), uid);
     this._players.push(newPlayer);
 

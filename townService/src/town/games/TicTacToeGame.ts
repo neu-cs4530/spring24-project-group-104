@@ -16,11 +16,14 @@ import Game from './Game';
  * @see https://en.wikipedia.org/wiki/Tic-tac-toe
  */
 export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMove> {
-  public constructor() {
+  private _saveData: boolean;
+
+  public constructor(saveData = true) {
     super({
       moves: [],
       status: 'WAITING_TO_START',
     });
+    this._saveData = saveData;
   }
 
   private get _board() {
@@ -112,7 +115,7 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
       moves: [...this.state.moves, move],
     };
     this._checkForGameEnding();
-    if (this.state.status === 'OVER') {
+    if (this.state.status === 'OVER' && this._saveData) {
       prisma.gameRecord
         .create({
           data: {

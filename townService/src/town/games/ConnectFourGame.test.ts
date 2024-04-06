@@ -132,7 +132,7 @@ function createMovesFromPattern(
 describe('ConnectFourGame', () => {
   let game: ConnectFourGame;
   beforeEach(() => {
-    game = new ConnectFourGame();
+    game = new ConnectFourGame(undefined, false);
   });
   describe('[T1.1] _join', () => {
     it('should throw an error if the player is already in the game', () => {

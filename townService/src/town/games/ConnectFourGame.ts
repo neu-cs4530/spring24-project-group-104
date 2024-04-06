@@ -34,6 +34,8 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
 
   private _preferredYellow?: PlayerID;
 
+  private _saveData: boolean;
+
   /**
    * Creates a new ConnectFourGame.
    * @param priorGame If provided, the new game will be created such that if either player
@@ -41,7 +43,7 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
    * first player is red, but if either player from the prior game joins the new game
    * (and clicks "start"), the first player will be the other color.
    */
-  public constructor(priorGame?: ConnectFourGame) {
+  public constructor(priorGame?: ConnectFourGame, saveData = true) {
     super({
       moves: [],
       status: 'WAITING_FOR_PLAYERS',
@@ -49,6 +51,7 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
     });
     this._preferredRed = priorGame?.state.red;
     this._preferredYellow = priorGame?.state.yellow;
+    this._saveData = priorGame ? saveData && priorGame._saveData : saveData;
   }
 
   /**
@@ -314,7 +317,7 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
       newState.winner = undefined;
       newState.status = 'OVER';
     }
-    if (newState.status === 'OVER') {
+    if (newState.status === 'OVER' && this._saveData) {
       prisma.gameRecord
         .create({
           data: {

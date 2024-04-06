@@ -1,13 +1,12 @@
+import { nanoid } from 'nanoid';
 import { UsersController } from './UsersController';
 import { prisma } from '../Utils';
-import { clearDatabase } from '../TestUtils';
 
 describe('UsersController', () => {
   let usersController: UsersController;
 
   beforeEach(async () => {
     usersController = new UsersController();
-    await clearDatabase();
   });
 
   afterEach(() => {
@@ -17,10 +16,10 @@ describe('UsersController', () => {
   describe('getUserStats', () => {
     it('should return user stats for a valid user ID, no game', async () => {
       // Mock the necessary dependencies
-      const userID = '123';
+      const userID = nanoid();
       const sessionToken = 'abc';
       const expectedUserStats = {
-        id: '123',
+        id: userID,
         displayName: 'John Doe',
         signUpDate: new Date(),
         lastLogin: new Date(),
@@ -53,7 +52,7 @@ describe('UsersController', () => {
     });
 
     it('should return user stats for a valid user ID , with games', async () => {
-      const userID = '123';
+      const userID = nanoid();
       const sessionToken = 'abc';
       const expectedUserStats = {
         id: userID,

@@ -1,11 +1,9 @@
 import { ITiledMap } from '@jonbell/tiled-map-type-guard';
 import { DeepMockProxy, mockClear, mockDeep, mockReset } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
-import { Prisma } from '@prisma/client';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
 import {
-  clearDatabase,
   ClientEventTypes,
   expectArraysToContainSameMembers,
   getEventListener,
@@ -356,7 +354,6 @@ describe('Town', () => {
   let playerID: PlayerID;
 
   beforeEach(async () => {
-    await clearDatabase();
     town = new Town(nanoid(), false, nanoid(), townEmitter);
     playerTestData = mockPlayer(town.townID);
     player = await town.addPlayer(

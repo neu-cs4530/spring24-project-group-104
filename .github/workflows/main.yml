@@ -46,6 +46,10 @@ jobs:
             echo "$(date) - waiting for database to start"
             sleep 2
           done
+          
+      - name: Migrate Prisma schema
+        run: cd townService; npx prisma migrate
+
       - name: Build and test backend service
         env: # Pass the Twilio secrets into environmental variables for the backend tests to use
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}

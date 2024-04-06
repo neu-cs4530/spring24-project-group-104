@@ -135,6 +135,7 @@ describe('TownController', () => {
     it('Forwards chat messages to local CoveyTownEvents listeners', () => {
       const message: ChatMessage = {
         author: nanoid(),
+        authorId: nanoid(),
         body: nanoid(),
         dateCreated: new Date(),
         sid: nanoid(),
@@ -163,6 +164,7 @@ describe('TownController', () => {
     it('Emits locally written chat messages to the socket, and dispatches no other events', () => {
       const testMessage: ChatMessage = {
         author: nanoid(),
+        authorId: nanoid(),
         body: nanoid(),
         dateCreated: new Date(),
         sid: nanoid(),

@@ -18,19 +18,26 @@ import {
   Thead,
   ToastId,
   Tr,
+  Text,
   useToast,
 } from '@chakra-ui/react';
 import { Town } from '../../generated/client';
 import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
+import UsernameUpdatePopup from '../Auth/UpdateUsernamePopup';
 
 interface TownSelectionProps {
   userName: string;
+  setUsername: (newUsername: string) => void;
   uid: string;
 }
 
-export default function TownSelection({ userName, uid }: TownSelectionProps): JSX.Element {
+export default function TownSelection({
+  userName,
+  setUsername,
+  uid,
+}: TownSelectionProps): JSX.Element {
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -242,10 +249,14 @@ export default function TownSelection({ userName, uid }: TownSelectionProps): JS
       <form>
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
-            <Heading as='h2' size='lg'>
-              Welcome, {userName}
+            <Heading as='h2' size='lg' textAlign='center'>
+              Welcome,{' '} 
+              <Text as='span' color='blue.500'>
+                {userName}
+              </Text>
             </Heading>
           </Box>
+          <UsernameUpdatePopup userName={userName} setUserName={setUsername} />
           <Box borderWidth='1px' borderRadius='lg'>
             <Heading p='4' as='h2' size='lg'>
               Create a New Town

@@ -60,7 +60,7 @@ export default function PreJoinScreens() {
   content = (
     <Box>
       <DeviceSelectionScreen />
-      <TownSelection userName={username} uid={uid} />
+      <TownSelection userName={username} setUsername={setUsername} uid={uid} />
     </Box>
   );
 }

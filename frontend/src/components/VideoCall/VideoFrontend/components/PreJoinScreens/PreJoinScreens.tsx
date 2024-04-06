@@ -9,9 +9,10 @@ import useVideoContext from '../../hooks/useVideoContext/useVideoContext';
 import { Box, Button, Heading, Text } from '@chakra-ui/react';
 import TownSelection from '../../../../Login/TownSelection';
 import { TownJoinResponse } from '../../../../../types/CoveyTownSocket';
-import FirebaseSignUpForm from '../../../../FirebaseAuth/FirebaseSignUpForm';
-import FirebaseLoginForm from '../../../../FirebaseAuth/FirebaseLogInForm';
+import SignUpForm from '../../../../Auth/SignUpForm';
+import LogInForm from '../../../../Auth/LogInForm';
 import { setuid } from 'process';
+import GoogleAuthButton from '../../../../Auth/GoogleAuthButton';
 
 
 export enum Steps {
@@ -50,8 +51,9 @@ export default function PreJoinScreens() {
  if (!isLoggedIn) {
   content = (
     <Box>
-      <FirebaseSignUpForm onLoginSuccess={handleLoginSuccess} />
-      <FirebaseLoginForm onLoginSuccess={handleLoginSuccess} />
+      <SignUpForm onLoginSuccess={handleLoginSuccess} />
+      <LogInForm onLoginSuccess={handleLoginSuccess} />
+      <GoogleAuthButton onLoginSuccess={handleLoginSuccess} />
     </Box>
   );
 } else {

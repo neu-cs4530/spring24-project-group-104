@@ -3,6 +3,7 @@ import {
   logInEmailPassword,
   deleteCurrentUser,
   signOutCurrentUser,
+  updateUsername,
 } from './firebaseAuth';
 import { auth } from './firebaseConfig';
 describe('Firebase Auth Services Integration Tests', () => {
@@ -176,6 +177,29 @@ describe('Firebase Auth Services Integration Tests', () => {
   it('should throw an error when trying to delete a user when there is no current user', async () => {
     await expect(deleteCurrentUser()).rejects.toThrowError(
       'Attepmted to delete the user, but no user is currently signed in.',
+    );
+  });
+
+  it(`should properly change a logged in user's username`, async () => {
+    const email = 'test@example.com';
+    const password = 'password123';
+    const userCredential = await logInEmailPassword(email, password);
+    expect(userCredential.user.displayName).toBe('test');
+    await updateUsername('CHANGED USERNAME');
+    expect(userCredential.user.displayName).toBe('CHANGED USERNAME');
+
+    // Changing the username back to the way it was before
+    await updateUsername('test');
+    expect(userCredential.user.displayName).toBe('test');
+
+    // Signing out of the user's account
+    await signOutCurrentUser();
+    expect(auth.currentUser).toBeFalsy();
+  });
+
+  it(`should throw an error when trying to change a username when there is no user signed in`, async () => {
+    await expect(updateUsername('This wont work')).rejects.toThrowError(
+      `Couldn't update the username. No user currently signed in.`,
     );
   });
 });

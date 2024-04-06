@@ -6,6 +6,8 @@ import {
   updateProfile,
   deleteUser,
   signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { auth } from './firebaseConfig';
 
@@ -93,6 +95,42 @@ export const logInEmailPassword = async (
 };
 
 /**
+ * Signs in a user using Google Authentication using a popup.
+ *
+ * @returns A Promise containing the user credentials after a successful sign in.
+ * @throws {Error} Throws an error if sign in fails for any reason.
+ */
+export const signInWithGoogle = async (): Promise<UserCredential> => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    return userCredential;
+  } catch (error) {
+    throw new Error('Failed to sign in with Google. Please try again.');
+  }
+};
+
+/**
+ * Updates the currently logged-in user's username to a new value.
+ */
+export const updateUsername = async (newUsername: string): Promise<void> => {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error(`Couldn't update the username. No user currently signed in.`);
+  }
+
+  try {
+    await updateProfile(user, {
+      displayName: newUsername,
+    });
+  } catch (error) {
+    console.error('Error updating username:', error);
+    throw new Error('Error updating the username.');
+  }
+};
+
+/**
  * Signs out the currently logged-in user. Throws an error if no user is signed in.
  *
  * @returns A promise that resolves if the sign-out is successful.
@@ -106,7 +144,8 @@ export const signOutCurrentUser = async (): Promise<void> => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error('Error signing out:', error);
+    const e = error as AuthError;
+    console.error('Error signing out:', e.message);
     throw error;
   }
 };
@@ -132,7 +171,6 @@ export const deleteCurrentUser = async (): Promise<void> => {
       );
       throw new Error('Re-authentication required');
     } else {
-      console.error('Error deleting user account:', e.message);
       throw new Error(e.message);
     }
   }

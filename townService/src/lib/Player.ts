@@ -66,6 +66,9 @@ export default class Player {
     };
   }
 
+  /**
+   * Register the player in the database
+   */
   async registerPlayerInDatabase(): Promise<User> {
     return prisma.user
       .findFirst({

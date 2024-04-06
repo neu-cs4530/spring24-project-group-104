@@ -150,17 +150,7 @@ export default class Town {
     // Set up a listener to forward all chat messages to all clients in the town
     socket.on('chatMessage', (message: ChatMessage) => {
       this._broadcastEmitter.emit('chatMessage', message);
-      prisma.chatMessage
-        .create({
-          data: {
-            senderId: message.authorId,
-            interactableId: message.interactableID,
-            townId: this._townID,
-            message: message.body,
-            sentAt: message.dateCreated,
-          },
-        })
-        .then(res => res);
+      this.addChatMessage(message).then(res => res);
       this._chatMessages.push(message);
       if (this._chatMessages.length > 200) {
         this._chatMessages.shift();
@@ -390,6 +380,26 @@ export default class Town {
   }
 
   /**
+   * Adds a chat message to the town's chat history
+   *
+   * @param message The chat message to add
+   */
+  public async addChatMessage(message: ChatMessage) {
+    return prisma.chatMessage
+      .create({
+        data: {
+          senderId: message.authorId,
+          interactableId: message.interactableID || this.townID,
+          townId: this._townID,
+          sid: message.sid,
+          message: message.body,
+          sentAt: message.dateCreated,
+        },
+      })
+      .then(res => res);
+  }
+
+  /**
    * Retrieves all chat messages, optionally filtered by interactableID
    * @param interactableID optional interactableID to filter by
    */
@@ -397,7 +407,7 @@ export default class Town {
     const messages = await prisma.chatMessage.findMany({
       where: {
         townId: this._townID,
-        interactableId: interactableID,
+        interactableId: interactableID || this.townID,
       },
       include: {
         user: true,
@@ -407,10 +417,12 @@ export default class Town {
       eachMessage =>
         ({
           author: eachMessage.user.displayName,
-          sid: eachMessage.id,
+          authorId: eachMessage.senderId,
+          sid: eachMessage.sid,
           body: eachMessage.message,
           dateCreated: eachMessage.sentAt,
-          interactableID: eachMessage.interactableId,
+          interactableID:
+            eachMessage.interactableId === this.townID ? undefined : eachMessage.interactableId,
         } as ChatMessage),
     );
   }

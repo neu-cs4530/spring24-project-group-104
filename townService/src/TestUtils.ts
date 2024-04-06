@@ -24,6 +24,16 @@ import {
   TownEmitter,
   ViewingArea,
 } from './types/CoveyTownSocket';
+import { prisma } from './Utils';
+
+export async function clearDatabase(): Promise<void> {
+  await prisma.chatMessage.deleteMany({});
+  await prisma.gameRecord.deleteMany({});
+  await prisma.townVisit.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.friendship.deleteMany({});
+  await prisma.user.deleteMany({});
+}
 
 /**
  * Create a new conversation area using some random defaults
@@ -166,6 +176,8 @@ export class MockedPlayer {
     const onMovementListener = getEventListener(this.socket, 'playerMovement');
     onMovementListener({ x, y, rotation, moving });
   }
+
+  registerPlayerInDatabase(): void {}
 }
 
 /**

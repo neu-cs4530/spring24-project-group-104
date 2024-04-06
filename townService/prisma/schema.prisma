@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id               String         @id
-  displayName      String?        @unique
+  displayName      String         @unique
   signUpDate       DateTime       @default(now())
   lastLogin        DateTime?
   totalTimeSpent   Int?
@@ -59,6 +59,7 @@ model ChatMessage {
   id              String   @id @default(uuid())
   senderId        String
   townId          String
+  sid             String
   interactableId  String?
   message         String
   sentAt          DateTime @default(now())

@@ -18,7 +18,7 @@ export class UsersController extends Controller {
     @Path() userID: string,
     @Header('X-Session-Token') sessionToken: string,
   ): Promise<UserStats> {
-    const userRecords = await prisma.user.findFirst({
+    const userRecords = await prisma.user.findUnique({
       where: {
         id: userID,
       },
@@ -33,21 +33,23 @@ export class UsersController extends Controller {
       firstJoined: userRecords.signUpDate.toDateString(),
       timeSpent: userRecords.totalTimeSpent,
       gameRecords: userRecords.gameRecords
-        .reduce((acc: Array<string>, record: GameRecord) => {
-          if (acc.includes(record.gameId)) {
-            return acc;
-          }
-          return acc.concat([record.gameId]);
-        }, [])
-        .map(gameId => ({
-          gameName: gameId,
-          wins: userRecords.gameRecords.filter(
-            record => record.gameId === gameId && record.win === true,
-          ).length,
-          losses: userRecords.gameRecords.filter(
-            record => record.gameId === gameId && record.win === false,
-          ).length,
-        })),
+        ? userRecords.gameRecords
+            .reduce((acc: Array<string>, record: GameRecord) => {
+              if (acc.includes(record.gameId)) {
+                return acc;
+              }
+              return acc.concat([record.gameId]);
+            }, [])
+            .map(gameId => ({
+              gameName: gameId,
+              wins: userRecords.gameRecords.filter(
+                record => record.gameId === gameId && record.win === true,
+              ).length,
+              losses: userRecords.gameRecords.filter(
+                record => record.gameId === gameId && record.win === false,
+              ).length,
+            }))
+        : [],
     };
   }
 }

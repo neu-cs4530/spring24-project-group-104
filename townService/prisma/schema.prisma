@@ -15,9 +15,9 @@ datasource db {
 }
 
 model User {
-  id               String          @id @default(uuid())
-  displayName      String?         @unique
-  signUpDate       DateTime        @default(now())
+  id               String         @id
+  displayName      String         @unique
+  signUpDate       DateTime       @default(now())
   lastLogin        DateTime?
   totalTimeSpent   Int?
   totalGamesPlayed Int?
@@ -71,13 +71,14 @@ model FriendRequest {
 }
 
 model ChatMessage {
-  id             String   @id @default(uuid())
-  senderId       String
-  townId         String
-  interactableId String
-  message        String
-  sentAt         DateTime @default(now())
-  user           User     @relation(fields: [senderId], references: [id])
+  id              String   @id @default(uuid())
+  senderId        String
+  townId          String
+  sid             String
+  interactableId  String?
+  message         String
+  sentAt          DateTime @default(now())
+  user            User     @relation(fields: [senderId], references: [id])
 }
 
 model Notification {

@@ -46,6 +46,13 @@ jobs:
             echo "$(date) - waiting for database to start"
             sleep 2
           done
+
+      - name: Migrate Prisma schema
+        env: # Pass the Twilio secrets into environmental variables for the backend tests to use
+          DATABASE_URL: postgresql://postgres:password123@localhost:5432/mydb
+          DIRECT_URL: postgresql://postgres:password123@localhost:5432/mydb
+        run: cd townService; npm install && npx prisma migrate dev
+
       - name: Build and test backend service
         env: # Pass the Twilio secrets into environmental variables for the backend tests to use
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}

@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid';
+import { User } from '@prisma/client';
 import { Player as PlayerModel, PlayerLocation, TownEmitter } from '../types/CoveyTownSocket';
+import { prisma } from '../Utils';
 
 /**
  * Each user who is connected to a town is represented by a Player object
@@ -62,5 +64,36 @@ export default class Player {
       location: this.location,
       userName: this._userName,
     };
+  }
+
+  /**
+   * Register the player in the database
+   */
+  async registerPlayerInDatabase(): Promise<User> {
+    return prisma.user
+      .findFirst({
+        where: {
+          id: this.id,
+        },
+      })
+      .then(res => {
+        if (res) {
+          return prisma.user.update({
+            where: {
+              id: this.id,
+            },
+            data: {
+              lastLogin: new Date(),
+            },
+          });
+        }
+        return prisma.user.create({
+          data: {
+            id: this.id,
+            displayName: this.userName,
+            lastLogin: new Date(),
+          },
+        });
+      });
   }
 }

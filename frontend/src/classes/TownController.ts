@@ -10,7 +10,7 @@ import ConversationArea from '../components/Town/interactables/ConversationArea'
 import GameArea from '../components/Town/interactables/GameArea';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
-import { TownsService, TownsServiceClient } from '../generated/client';
+import { TownsService, TownsServiceClient, UsersService } from '../generated/client';
 import useTownController from '../hooks/useTownController';
 import {
   ChatMessage,
@@ -24,6 +24,7 @@ import {
   PlayerID,
   PlayerLocation,
   TownSettingsUpdate,
+  UserStats,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
 import {
@@ -135,6 +136,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   private _townsService: TownsService;
 
+  private _usersService: UsersService;
+
   /**
    * The login controller is used by the frontend application to manage logging in to a town,
    * and is also used to log out of a town.
@@ -234,6 +237,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     assert(url);
     this._socket = io(url, { auth: { userName, uid, townID: townID } });
     this._townsService = new TownsServiceClient({ BASE: url }).towns;
+    this._usersService = new TownsServiceClient({ BASE: url }).users;
     this.registerSocketListeners();
   }
 
@@ -359,6 +363,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   public interactEnd(objectNoLongerInteracting: Interactable) {
     this._interactableEmitter.emit('endInteraction', objectNoLongerInteracting);
+  }
+
+  public async getUserStats(): Promise<UserStats> {
+    return this._usersService.getUserStats(this._userID as string, this.sessionToken);
   }
 
   public async getChatMessages(_interactableID: string | undefined): Promise<ChatMessage[]> {

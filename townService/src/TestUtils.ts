@@ -24,6 +24,16 @@ import {
   TownEmitter,
   ViewingArea,
 } from './types/CoveyTownSocket';
+import { prisma } from './Utils';
+
+export async function clearDatabase(): Promise<void> {
+  await prisma.chatMessage.deleteMany({});
+  await prisma.gameRecord.deleteMany({});
+  await prisma.townVisit.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.friendship.deleteMany({});
+  await prisma.user.deleteMany({});
+}
 
 /**
  * Create a new conversation area using some random defaults
@@ -144,24 +154,30 @@ export class MockedPlayer {
 
   player: Player | undefined;
 
+  playerId: string;
+
   constructor(
     socket: MockProxy<CoveyTownSocket>,
     socketToRoomMock: MockProxy<TypedEventBroadcaster<ServerToClientEvents>>,
     userName: string,
     townID: string,
     player: Player | undefined,
+    uid: string,
   ) {
     this.socket = socket;
     this.socketToRoomMock = socketToRoomMock;
     this.userName = userName;
     this.townID = townID;
     this.player = player;
+    this.playerId = uid;
   }
 
   moveTo(x: number, y: number, rotation: Direction = 'front', moving = false): void {
     const onMovementListener = getEventListener(this.socket, 'playerMovement');
     onMovementListener({ x, y, rotation, moving });
   }
+
+  registerPlayerInDatabase(): void {}
 }
 
 /**
@@ -174,7 +190,8 @@ export class MockedPlayer {
 export function mockPlayer(townID: string): MockedPlayer {
   const socket = mockDeep<CoveyTownSocket>();
   const userName = nanoid();
-  socket.handshake.auth = { userName, townID };
+  const uid = nanoid();
+  socket.handshake.auth = { userName, uid, townID };
   const socketToRoomMock = mock<BroadcastOperator<ServerToClientEvents, SocketData>>();
   socket.to.mockImplementation((room: string | string[]) => {
     if (townID === room) {
@@ -182,7 +199,7 @@ export function mockPlayer(townID: string): MockedPlayer {
     }
     throw new Error(`Tried to broadcast to ${room} but this player is in ${townID}`);
   });
-  return new MockedPlayer(socket, socketToRoomMock, userName, townID, undefined);
+  return new MockedPlayer(socket, socketToRoomMock, userName, townID, undefined, uid);
 }
 
 /**

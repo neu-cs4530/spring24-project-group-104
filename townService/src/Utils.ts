@@ -1,3 +1,5 @@
+import { PrismaClient } from '@prisma/client';
+
 /**
  * This function exists solely to help satisfy the linter + typechecker when it looks over the
  * stubbed (not yet implemented by you) functions. Remove calls to it as you go.
@@ -14,3 +16,5 @@ export function logError(err: any): void {
   // eslint-disable-next-line no-console
   console.trace(err);
 }
+
+export const prisma = new PrismaClient();

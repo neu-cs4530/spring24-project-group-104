@@ -1,3 +1,4 @@
+import { prisma } from '../../Utils';
 import InvalidParametersError, {
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
@@ -15,11 +16,14 @@ import Game from './Game';
  * @see https://en.wikipedia.org/wiki/Tic-tac-toe
  */
 export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMove> {
-  public constructor() {
+  private _saveData: boolean;
+
+  public constructor(saveData = true) {
     super({
       moves: [],
       status: 'WAITING_TO_START',
     });
+    this._saveData = saveData;
   }
 
   private get _board() {
@@ -111,6 +115,26 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
       moves: [...this.state.moves, move],
     };
     this._checkForGameEnding();
+    if (this.state.status === 'OVER' && this._saveData) {
+      prisma.gameRecord
+        .create({
+          data: {
+            userId: this.state.o as string,
+            gameId: 'TicTacToe',
+            win: this.state.winner === this.state.o,
+          },
+        })
+        .then(res => res);
+      prisma.gameRecord
+        .create({
+          data: {
+            userId: this.state.x as string,
+            gameId: 'TicTacToe',
+            win: this.state.winner === this.state.x,
+          },
+        })
+        .then(res => res);
+    }
   }
 
   /*

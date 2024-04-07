@@ -18,7 +18,7 @@ import {
   SocketData,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
-import { logError } from '../Utils';
+import { logError, prisma } from '../Utils';
 import ConversationArea from './ConversationArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
@@ -116,13 +116,21 @@ export default class Town {
    *
    * @param newPlayer The new player to add to the town
    */
-  async addPlayer(
-    userName: string,
-    socket: CoveyTownSocket,
-    uid: string = nanoid(),
-  ): Promise<Player> {
+  async addPlayer(userName: string, socket: CoveyTownSocket, uid: string): Promise<Player> {
     const newPlayer = new Player(userName, socket.to(this._townID), uid);
     this._players.push(newPlayer);
+
+    await newPlayer.registerPlayerInDatabase().then(res => {
+      prisma.townVisit
+        .create({
+          data: {
+            userId: res.id,
+            townId: this._townID,
+            visitedAt: new Date(),
+          },
+        })
+        .then(i => i);
+    });
 
     this._connectedSockets.add(socket);
 
@@ -143,6 +151,7 @@ export default class Town {
     // Set up a listener to forward all chat messages to all clients in the town
     socket.on('chatMessage', (message: ChatMessage) => {
       this._broadcastEmitter.emit('chatMessage', message);
+      this.addChatMessage(message).then(res => res);
       this._chatMessages.push(message);
       if (this._chatMessages.length > 200) {
         this._chatMessages.shift();
@@ -477,11 +486,51 @@ export default class Town {
   }
 
   /**
+   * Adds a chat message to the town's chat history
+   *
+   * @param message The chat message to add
+   */
+  public async addChatMessage(message: ChatMessage) {
+    return prisma.chatMessage
+      .create({
+        data: {
+          senderId: message.authorId,
+          interactableId: message.interactableID || this.townID,
+          townId: this._townID,
+          sid: message.sid,
+          message: message.body,
+          sentAt: message.dateCreated,
+        },
+      })
+      .then(res => res);
+  }
+
+  /**
    * Retrieves all chat messages, optionally filtered by interactableID
    * @param interactableID optional interactableID to filter by
    */
-  public getChatMessages(interactableID: string | undefined) {
-    return this._chatMessages.filter(eachMessage => eachMessage.interactableID === interactableID);
+  public async getChatMessages(interactableID: string | undefined) {
+    const messages = await prisma.chatMessage.findMany({
+      where: {
+        townId: this._townID,
+        interactableId: interactableID || this.townID,
+      },
+      include: {
+        user: true,
+      },
+    });
+    return messages.map(
+      eachMessage =>
+        ({
+          author: eachMessage.user.displayName,
+          authorId: eachMessage.senderId,
+          sid: eachMessage.sid,
+          body: eachMessage.message,
+          dateCreated: eachMessage.sentAt,
+          interactableID:
+            eachMessage.interactableId === this.townID ? undefined : eachMessage.interactableId,
+        } as ChatMessage),
+    );
   }
 
   /**

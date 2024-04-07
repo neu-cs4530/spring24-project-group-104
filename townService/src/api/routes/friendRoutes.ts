@@ -4,11 +4,6 @@ import * as friendService from '../services/friendService';
 
 const router = Router();
 
-router.get('/hello', (req: Request, res: Response) => {
-  console.log('Hello route called!');
-  res.json({ message: 'Hello, world!' });
-});
-
 /**
  * GET /api/friends/:userID
  * Get all friends of a user.
@@ -141,9 +136,9 @@ router.patch('/requests', async (req: Request, res: Response) => {
     if (accept) {
       await friendService.createFriendship(requesterID, receiverID);
       res.status(200).send('Friendship created');
+    } else {
+      res.status(200).send('Friend request deleted');
     }
-
-    res.status(200).send('Friend request deleted');
   } catch (error) {
     res.status(500).send(`Error creating friendship: ${error}`);
   }

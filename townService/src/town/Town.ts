@@ -23,6 +23,7 @@ import ConversationArea from './ConversationArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
+import prisma from '../api/repositories/PrismaClient';
 
 /**
  * The Town class implements the logic for each town: managing the various events that
@@ -220,6 +221,111 @@ export default class Town {
     });
     return newPlayer;
   }
+
+  /**
+   * A method for sending a friend request to another player.
+   *
+   * @param senderId person sending the friend request
+   * @param receiverId person receiving the friend request
+   * @returns promise of the friendship object
+   */
+  // async sendFriendRequest(senderId: string, receiverId: string): Promise<FriendRequest> {
+  //   if (senderId === receiverId) {
+  //     throw new Error('Cannot send friend request to oneself.');
+  //   }
+  //   const existingRequest = await prisma.friendship.findFirst({
+  //     where: {
+  //       OR: [
+  //         { userID1: senderId, userID2: receiverId },
+  //         { userID1: receiverId, userID2: senderId },
+  //       ],
+  //     },
+  //   });
+
+  //   if (existingRequest) {
+  //     throw new Error('Friend request already exists or already friends.');
+  //   }
+
+  //   return prisma.friendRequest.create({
+  //     data: {
+  //       userID1: senderId,
+  //       userID2: receiverId,
+  //       accept: false,
+  //     },
+  //   });
+  // }
+
+  // /**
+  //  * A method to represent a response to a friend request.
+  //  *
+  //  * @param requestId the id of the friend request
+  //  * @param accept whether to accept the friend request
+  //  * @returns a promise of the friendship object
+  //  */
+  // async respondToFriendRequest(requestId: string, accept: boolean): Promise<Friendship | null> {
+  //   const request = await prisma.friendship.findUnique({
+  //     where: { id: requestId },
+  //   });
+
+  //   if (!request) {
+  //     throw new Error('Friend request not found.');
+  //   }
+
+  //   if (accept) {
+  //     const senderId = prisma.friendRequest
+  //       .findFirstOrThrow({
+  //         where: {
+  //           id: requestId,
+  //         },
+  //       })
+  //       .then(res => res.userID1);
+
+  //     const receiverId = prisma.friendRequest
+  //       .findFirstOrThrow({
+  //         where: {
+  //           id: requestId,
+  //         },
+  //       })
+  //       .then(res => res.userID2);
+
+  //     if (!senderId || !receiverId) {
+  //       return null;
+  //     }
+
+  //     return prisma.friendship
+  //       .create({
+  //         data: {
+  //           userID1: senderId,
+  //           userID2: receiverId,
+  //         },
+  //       })
+  //       .then(res => res);
+  //   }
+  //   await prisma.friendRequest.delete({
+  //     where: { id: requestId },
+  //   });
+  //   return null;
+  // }
+
+  // /**
+  //  * A method to get a user's friend list.
+  //  *
+  //  * @param userId user id to get the friend list for
+  //  * @returns promise of the list of friends
+  //  */
+  // async getFriendList(userId: string): Promise<Friendship[]> {
+  //   const friendships = await prisma.friendship.findMany({
+  //     where: {
+  //       OR: [{ userID1: userId }, { userID2: userId }],
+  //     },
+  //     include: {
+  //       user1: true,
+  //       user2: true,
+  //     },
+  //   });
+
+  //   return friendships;
+  // }
 
   /**
    * Destroys all data related to a player in this town.

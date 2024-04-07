@@ -26,6 +26,7 @@ import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import UsernameUpdatePopup from '../Auth/UpdateUsernamePopup';
+import { indexOf } from 'lodash';
 
 interface TownSelectionProps {
   userName: string;
@@ -42,26 +43,65 @@ export default function TownSelection({
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
   const [currentPublicTowns, setCurrentPublicTowns] = useState<Town[]>();
+  const [recentlyVistedTowns, setRecentlyVisitedTowns] = useState<Town[]>();
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const loginController = useLoginController();
-  const { setTownController, townsService } = loginController;
+  const { setTownController, townsService, usersService } = loginController;
   const { connect: videoConnect } = useVideoContext();
+
+  const url = process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL;
+  assert(url, 'NEXT_PUBLIC_TOWNS_SERVICE_URL must be defined');
 
   const toast = useToast();
 
   const isMounted = useRef(true);
 
   const updateTownListings = useCallback(() => {
-    townsService.listTowns().then(towns => {
-      if (isMounted.current) {
-        setCurrentPublicTowns(towns.sort((a, b) => b.currentOccupancy - a.currentOccupancy));
-      }
-    });
-  }, [townsService]);
+    if (uid) {
+      usersService
+        .listRecentlyVistedTowns(uid)
+        .then(towns => {
+          let sortedRecentTowns;
+          if (isMounted.current) {
+            sortedRecentTowns = towns.sort((a, b) => b.currentOccupancy - a.currentOccupancy);
+            if (sortedRecentTowns.length > 3) {
+              sortedRecentTowns = sortedRecentTowns.splice(0, 3);
+            }
+            setRecentlyVisitedTowns(sortedRecentTowns);
+          }
+          return sortedRecentTowns;
+        })
+        .then(sortedRecentTowns => {
+          townsService.listTowns().then(towns => {
+            if (isMounted.current) {
+              setCurrentPublicTowns(
+                towns
+                  .sort((a, b) => b.currentOccupancy - a.currentOccupancy)
+                  .filter(town =>
+                    sortedRecentTowns
+                      ? indexOf(
+                          sortedRecentTowns.map(t => t.townID),
+                          town.townID,
+                        ) === -1
+                      : true,
+                  ),
+              );
+            }
+          });
+        });
+    } else {
+      townsService.listTowns().then(towns => {
+        if (isMounted.current) {
+          setCurrentPublicTowns(towns);
+        }
+      });
+    }
+  }, [townsService, uid, usersService]);
 
   useEffect(() => {
     updateTownListings();
     const timer = setInterval(updateTownListings, 2000);
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
       clearInterval(timer);
@@ -331,7 +371,36 @@ export default function TownSelection({
             </Heading>
             <Box maxH='500px' overflowY='scroll'>
               <Table>
-                <TableCaption placement='bottom'>Publicly Listed Towns</TableCaption>
+                <TableCaption placement='top'>Recently Visited Towns</TableCaption>
+                <Thead>
+                  <Tr>
+                    <Th>Town Name</Th>
+                    <Th>Town ID</Th>
+                    <Th>Activity</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {recentlyVistedTowns?.map(town => (
+                    <Tr key={town.townID}>
+                      <Td role='cell'>{town.friendlyName}</Td>
+                      <Td role='cell'>{town.townID}</Td>
+                      <Td role='cell'>
+                        {town.currentOccupancy}/{town.maximumOccupancy}
+                        <Button
+                          onClick={() => handleJoin(town.townID)}
+                          disabled={town.currentOccupancy >= town.maximumOccupancy || isJoining}
+                          isLoading={isJoining}>
+                          Connect
+                        </Button>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+            <Box maxH='500px' overflowY='scroll'>
+              <Table>
+                <TableCaption placement='top'>Other Publicly Listed Towns</TableCaption>
                 <Thead>
                   <Tr>
                     <Th>Town Name</Th>

@@ -51,20 +51,6 @@ function StatsDialog({ open, onClose }: PropsWithChildren<StatsDialogProps>) {
     const townController = useTownController();
     const [stats, setStats] = useState<UserStats>()
 
-    // useEffect(() => {
-    //     setStats({
-    //         firstJoined: new Date('December 17, 1995 03:24:00'),
-    //         timeSpent: new Date(500),
-    //         gameRecords: [
-    //             {
-    //                 gameName: 'Connect Four',
-    //                 wins: 5,
-    //                 losses: 2
-    //             }
-    //         ]
-    //     })
-    // }, [])
-
     useEffect(() => {
         if(open) {
             townController.getUserStats().then(res => setStats(res))

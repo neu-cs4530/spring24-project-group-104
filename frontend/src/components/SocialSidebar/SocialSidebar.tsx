@@ -242,17 +242,19 @@ export default function SocialSidebar(): JSX.Element {
                 <Text>{request.sender.displayName}</Text>
                 <Box>
                   <Button
-                    size='sm'
+                    size='xs'
                     colorScheme='green'
                     leftIcon={<CheckIcon />}
+                    margin={1}
                     onClick={() => handleAcceptFriendRequest(request.sender.id)}
                     mr={2}>
                     Accept
                   </Button>
                   <Button
-                    size='sm'
+                    size='xs'
                     colorScheme='red'
                     leftIcon={<CloseIcon />}
+                    margin={1}
                     onClick={() => handleRejectFriendRequest(request.sender.id)}>
                     Reject
                   </Button>
@@ -280,7 +282,7 @@ export default function SocialSidebar(): JSX.Element {
                 alignItems='center'>
                 <Text>{request.receiver.displayName}</Text>
                 <Button
-                  size='sm'
+                  size='xs'
                   colorScheme='red'
                   leftIcon={<DeleteIcon />}
                   onClick={() => handleDeleteFriendRequest(request.receiver.id)}>

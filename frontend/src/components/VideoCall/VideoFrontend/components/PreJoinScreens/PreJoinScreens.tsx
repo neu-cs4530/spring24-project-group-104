@@ -13,6 +13,7 @@ import SignUpForm from '../../../../Auth/SignUpForm';
 import LogInForm from '../../../../Auth/LogInForm';
 import { setuid } from 'process';
 import GoogleAuthButton from '../../../../Auth/GoogleAuthButton';
+import Tutorial from '../../../../Auth/Tutorial';
 
 
 export enum Steps {
@@ -26,6 +27,7 @@ export default function PreJoinScreens() {
  const { getAudioAndVideoTracks } = useVideoContext();
  const [mediaError, setMediaError] = useState<Error>();
  const [isLoggedIn, setIsLoggedIn] = useState(false);
+ const [tutorialCompleted, setTutorialCompleted] = useState(false);
  const [username, setUsername] = useState('');
  const [uid, setUID] = useState('');
 
@@ -41,11 +43,43 @@ export default function PreJoinScreens() {
    }
  }, [getAudioAndVideoTracks, mediaError]);
 
- const handleLoginSuccess = (username: string, uid: string) => {
+
+ const handleSignUpSuccess = (username: string, uid: string) => {
   setIsLoggedIn(true);
   setUsername(username);
   setUID(uid);
  };
+
+ 
+ const handleLoginSuccess = (username: string, uid: string) => {
+  setIsLoggedIn(true);
+  setUsername(username);
+  setUID(uid);
+  setTutorialCompleted(true);
+ };
+
+ let header;
+ if (!isLoggedIn || !tutorialCompleted) {
+  header = (
+    <Flex justify="center" mb={4}>
+        <Heading as="h2" size="3xl" textAlign="center" mb={6}>Covey.Town</Heading>
+    </Flex>
+  );
+} 
+  else {
+  header = (
+    <>
+    <Flex justify="center" mb={4}>
+        <Heading as="h2" size="3xl" textAlign="center" mb={6}>Covey.Town</Heading>
+      </Flex>
+    <Text p="4">
+      Covey.Town is a social platform that integrates a 2D game-like metaphor with video chat.
+      To get started, setup your camera and microphone, choose a username, and then create a new town
+      to hang out in, or join an existing one.
+    </Text>
+    </>
+  );
+  }
 
  let content;
  if (!isLoggedIn) {
@@ -55,7 +89,7 @@ export default function PreJoinScreens() {
         Create an Account or Log In!
       </Heading>
       <Flex direction="column" gap={6}>
-        <SignUpForm onLoginSuccess={handleLoginSuccess} />
+        <SignUpForm onLoginSuccess={handleSignUpSuccess} />
         <Flex align="center">
           <Divider />
           <Text px={2}>or</Text>
@@ -67,11 +101,17 @@ export default function PreJoinScreens() {
           <Text px={2}>or</Text>
           <Divider />
         </Flex>
-        <GoogleAuthButton onLoginSuccess={handleLoginSuccess} />
+        <GoogleAuthButton onLoginSuccess={handleSignUpSuccess} />
       </Flex>
     </Box>
   );
-} else {
+} 
+else if (!tutorialCompleted) {
+  content = (
+    <Tutorial onComplete={() => setTutorialCompleted(true)} />
+  );
+}
+  else {
   content = (
     <Box>
       <DeviceSelectionScreen />
@@ -81,15 +121,10 @@ export default function PreJoinScreens() {
 }
 
  return (
-  <IntroContainer>
-    <MediaErrorSnackbar error={mediaError} />
-    <Heading as="h2" size="xl">Welcome to Covey.Town!</Heading>
-    <Text p="4">
-      Covey.Town is a social platform that integrates a 2D game-like metaphor with video chat.
-      To get started, setup your camera and microphone, choose a username, and then create a new town
-      to hang out in, or join an existing one.
-    </Text>
-    {content}
-  </IntroContainer>
+    <IntroContainer>
+      <MediaErrorSnackbar error={mediaError} />
+      {header}
+      {content}
+    </IntroContainer>
 );
 }

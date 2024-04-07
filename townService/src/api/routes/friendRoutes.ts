@@ -16,18 +16,19 @@ router.get('/:userID', async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
 
-    const friends = await prisma.friendship.findMany({
+    const friendships = await prisma.friendship.findMany({
       where: {
-        OR: [
-          {
-            userID1: userID,
-          },
-          {
-            userID2: userID,
-          },
-        ],
+        OR: [{ userID1: userID }, { userID2: userID }],
+      },
+      include: {
+        user1: true,
+        user2: true,
       },
     });
+
+    const friends = friendships.map(friendship =>
+      friendship.userID1 === userID ? friendship.user2 : friendship.user1,
+    );
 
     res.status(200).json(friends);
   } catch (error) {

@@ -47,7 +47,6 @@ export default function SocialSidebar(): JSX.Element {
 
   useEffect(() => {
     fetchFriendRequests();
-    getUserFriends();
 
     const intervalId = setInterval(fetchFriendRequests, 5000);
 
@@ -56,24 +55,15 @@ export default function SocialSidebar(): JSX.Element {
     };
   }, [userID]);
 
-  console.log('friend list', friendList);
+  useEffect(() => {
+    getUserFriends();
+  }, [incomingRequests, outgoingRequests]);
 
   const getIDFromUser = (userName: string) => {
     for (const player of players) {
       if (player.userName === userName) {
         return player.id;
       }
-      console.log('are we here');
-    }
-    return '';
-  };
-
-  const getUserFromID = (userID: string) => {
-    for (const player of players) {
-      if (player.id === userID) {
-        return player.userName;
-      }
-      console.log('are we here');
     }
     return '';
   };
@@ -125,6 +115,7 @@ export default function SocialSidebar(): JSX.Element {
       if (response.ok) {
         console.log('Friend Request Accepted');
         fetchFriendRequests();
+        getUserFriends();
       } else {
         console.error('Error accepting friend request:', response.statusText);
       }
@@ -202,14 +193,14 @@ export default function SocialSidebar(): JSX.Element {
 
       <Heading fontSize='l' as='h2' mb={2}>
         {' '}
-        Friends{' '}
+        My Friends{' '}
       </Heading>
       <Box border='1px' borderColor='gray.200' borderRadius='md' p={2}>
         {friendList.length > 0 ? (
           <VStack align='stretch' spacing={2}>
             {friendList.map(friend => (
-              <Box key={friend.id} bg='gray.50' p={1} borderRadius=''>
-                <Text>{getUserFromID(friend.id)}</Text>
+              <Box key={friend.id} bg='gray.50' p={1}>
+                <Text>{friend.displayName}</Text>
               </Box>
             ))}
           </VStack>

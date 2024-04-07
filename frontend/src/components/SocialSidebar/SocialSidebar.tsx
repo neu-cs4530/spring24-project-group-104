@@ -1,4 +1,4 @@
-import { Button, Heading, Input, StackDivider, VStack } from '@chakra-ui/react';
+import { Box, Button, Heading, Input, StackDivider, VStack, Text } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import InteractableAreasList from './InteractableAreasList';
 import PlayersList from './PlayersList';
@@ -14,10 +14,34 @@ export default function SocialSidebar({
   userName1,
   players,
 }: SocialSidebarProps): JSX.Element {
-  // const userID = controller;
-  // const username = controller.userName;
-  // const players = controller.players;
   const [userName2, setUserName2] = useState('');
+  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [outgoingRequests, setOutgoingRequests] = useState([]);
+
+  useEffect(() => {
+    const fetchFriendRequests = async () => {
+      try {
+        const response = await fetch(`http://localhost:8081/api/friends/requests/${userID}`);
+        if (response.ok) {
+          const data = await response.json();
+          setIncomingRequests(data.incoming);
+          setOutgoingRequests(data.outgoing);
+        } else {
+          console.error('Error fetching friend requests:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error calling friend requests route:', error);
+      }
+    };
+
+    fetchFriendRequests();
+
+    const intervalId = setInterval(fetchFriendRequests, 5000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [userID]);
 
   console.log('players:', players);
   console.log('userID1:', userID);
@@ -61,7 +85,7 @@ export default function SocialSidebar({
   return (
     <VStack
       align='left'
-      spacing={2}
+      spacing={3}
       border='2px'
       padding={2}
       marginLeft={2}
@@ -85,15 +109,42 @@ export default function SocialSidebar({
       />
       <Button onClick={handleSendRequest}>Send Request</Button>
 
-      <Heading fontSize='l' as='h1'>
-        Friend Requests
+      <Heading fontSize='l' as='h2' mb={2}>
+        {' '}
+        Friend Requests{' '}
       </Heading>
-      <Heading fontSize='s' as='h2'>
-        Incoming
-      </Heading>
-      <Heading fontSize='s' as='h2'>
-        Outgoing
-      </Heading>
+      <Box border='1px' borderColor='gray.200' borderRadius='md' p={2}>
+        <Heading fontSize='s' as='h2' color='blue.500'>
+          {' '}
+          Incoming{' '}
+        </Heading>
+        {incomingRequests.length > 0 ? (
+          <VStack align='stretch' spacing={2}>
+            {incomingRequests.map(request => (
+              <Box key={request.sender.id} bg='gray.50' p={2} borderRadius='md'>
+                <Text>{request.sender.displayName}</Text>
+              </Box>
+            ))}
+          </VStack>
+        ) : (
+          <Text color='gray.500'>No incoming requests</Text>
+        )}
+
+        <Heading fontSize='md' as='h3' mt={4} mb={2} color='blue.700'>
+          Outgoing
+        </Heading>
+        {outgoingRequests.length > 0 ? (
+          <VStack align='stretch' spacing={2}>
+            {outgoingRequests.map(request => (
+              <Box key={request.receiver.id} bg='gray.50' p={2} borderRadius='md'>
+                <Text>{request.receiver.displayName}</Text>
+              </Box>
+            ))}
+          </VStack>
+        ) : (
+          <Text color='gray.500'>No outgoing requests</Text>
+        )}
+      </Box>
     </VStack>
   );
 }

@@ -50,6 +50,12 @@ router.get('/:userID', async (req: Request, res: Response) => {
  */
 router.post('/requests', async (req: Request, res: Response) => {
   const { userID1, userID2 } = req.body;
+
+  if (userID1 === userID2) {
+    res.status(400).send('Cannot send friend request to self');
+    return;
+  }
+
   try {
     await prisma.friendRequest.create({
       data: {

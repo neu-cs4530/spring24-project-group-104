@@ -1,20 +1,28 @@
-import { Box, Button, Heading, Input, StackDivider, VStack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Heading,
+  Input,
+  StackDivider,
+  VStack,
+  Text,
+  useToast,
+} from '@chakra-ui/react';
 import { CheckIcon, CloseIcon, DeleteIcon } from '@chakra-ui/icons';
 import React, { useEffect, useState } from 'react';
 import InteractableAreasList from './InteractableAreasList';
 import PlayersList from './PlayersList';
 import useTownController from '../../hooks/useTownController';
-import { setDefaultResultOrder } from 'dns';
 
 export default function SocialSidebar(): JSX.Element {
   const coveyTownController = useTownController();
   const userID = coveyTownController.userID;
-  const userName1 = coveyTownController.userName;
   const players = coveyTownController.players;
   const [userName2, setUserName2] = useState('');
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [outgoingRequests, setOutgoingRequests] = useState([]);
   const [friendList, setFriendList] = useState([]);
+  const toast = useToast();
 
   const fetchFriendRequests = async () => {
     try {
@@ -70,7 +78,6 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleSendRequest = async () => {
     const userID2 = getIDFromUser(userName2);
-    console.log('userID2:', userID2);
     try {
       const response = await fetch('http://localhost:8081/api/friends/requests', {
         method: 'POST',
@@ -84,21 +91,30 @@ export default function SocialSidebar(): JSX.Element {
       });
 
       if (response.ok) {
-        const data = await response.text();
-        console.log(data);
-
         fetchFriendRequests();
       } else {
-        console.error('Error creating friend request:', response.statusText);
+        const errorText = await response.text();
+        toast({
+          title: 'Error',
+          description: errorText,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error('Error calling friend request route:', error);
+      toast({
+        title: 'Error',
+        description: 'An error occurred while sending the friend request.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   const handleAcceptFriendRequest = async (requesterID: string) => {
-    console.log('requesterID:', requesterID);
-    console.log('receiverID:', userID);
     try {
       const response = await fetch('http://localhost:8081/api/friends/requests', {
         method: 'PATCH',
@@ -113,7 +129,6 @@ export default function SocialSidebar(): JSX.Element {
       });
 
       if (response.ok) {
-        console.log('Friend Request Accepted');
         fetchFriendRequests();
         getUserFriends();
       } else {
@@ -139,7 +154,6 @@ export default function SocialSidebar(): JSX.Element {
       });
 
       if (response.ok) {
-        console.log('Friend Request Rejected');
         fetchFriendRequests();
       } else {
         console.error('Error rejecting friend request:', response.statusText);
@@ -164,7 +178,6 @@ export default function SocialSidebar(): JSX.Element {
       });
 
       if (response.ok) {
-        console.log('Friend Request Deleted');
         fetchFriendRequests();
       } else {
         console.error('Error deleting friend request:', response.statusText);
@@ -215,7 +228,10 @@ export default function SocialSidebar(): JSX.Element {
       <Input
         placeholder="Enter player's username"
         value={userName2}
-        onChange={e => setUserName2(e.target.value)}
+        onChange={e => {
+          e.preventDefault();
+          setUserName2(e.target.value);
+        }}
       />
       <Button onClick={handleSendRequest}>Send Request</Button>
 

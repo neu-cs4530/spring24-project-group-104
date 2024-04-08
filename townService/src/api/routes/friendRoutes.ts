@@ -53,6 +53,14 @@ router.post('/requests', async (req: Request, res: Response) => {
   }
 
   try {
+    const user1 = await prisma.user.findUnique({ where: { id: userID1 } });
+    const user2 = await prisma.user.findUnique({ where: { id: userID2 } });
+
+    if (!user1 || !user2) {
+      res.status(404).send('User not found');
+      return;
+    }
+
     const existingFriendship = await prisma.friendship.findFirst({
       where: {
         OR: [
@@ -70,6 +78,20 @@ router.post('/requests', async (req: Request, res: Response) => {
 
     if (existingFriendship) {
       res.status(400).send('Friendship already exists');
+      return;
+    }
+
+    const existingFriendRequest = await prisma.friendRequest.findFirst({
+      where: {
+        OR: [
+          { userID1, userID2 },
+          { userID1: userID2, userID2: userID1 },
+        ],
+      },
+    });
+
+    if (existingFriendRequest) {
+      res.status(400).send('Friend request already sent');
       return;
     }
 

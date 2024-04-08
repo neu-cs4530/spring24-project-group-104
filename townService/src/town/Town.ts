@@ -143,7 +143,31 @@ export default class Town {
     // clean up our listener adapter, and then let the CoveyTownController know that the
     // player's session is disconnected
     socket.on('disconnect', () => {
+      const sessionEndTime = new Date();
+
+      prisma.user
+        .findFirst({
+          where: { id: newPlayer.id },
+        })
+        .then(user => {
+          if (user && user.lastLogin) {
+            const sessionDuration = (sessionEndTime.getTime() - user.lastLogin.getTime()) / 1000;
+            prisma.user
+              .update({
+                where: { id: newPlayer.id },
+                data: {
+                  lastLogin: sessionEndTime,
+                  totalTimeSpent: {
+                    increment: sessionDuration,
+                  },
+                },
+              })
+              .then(res => res);
+          }
+        });
+
       this._removePlayer(newPlayer);
+
       this._connectedSockets.delete(socket);
     });
 

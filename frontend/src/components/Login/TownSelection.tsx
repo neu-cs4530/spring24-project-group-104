@@ -49,52 +49,29 @@ export default function TownSelection({
   const { setTownController, townsService, usersService } = loginController;
   const { connect: videoConnect } = useVideoContext();
 
-  const url = process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL;
-  assert(url, 'NEXT_PUBLIC_TOWNS_SERVICE_URL must be defined');
-
   const toast = useToast();
 
   const isMounted = useRef(true);
 
-  const updateTownListings = useCallback(() => {
+  const updateTownListings = useCallback(async () => {
+    const alltowns = await townsService.listTowns();
+    let recentlyVisited = new Array<string>();
     if (uid) {
-      usersService
-        .listRecentlyVistedTowns(uid)
-        .then(towns => {
-          let sortedRecentTowns;
-          if (isMounted.current) {
-            sortedRecentTowns = towns.sort((a, b) => b.currentOccupancy - a.currentOccupancy);
-            if (sortedRecentTowns.length > 3) {
-              sortedRecentTowns = sortedRecentTowns.splice(0, 3);
-            }
-            setRecentlyVisitedTowns(sortedRecentTowns);
-          }
-          return sortedRecentTowns;
-        })
-        .then(sortedRecentTowns => {
-          townsService.listTowns().then(towns => {
-            if (isMounted.current) {
-              setCurrentPublicTowns(
-                towns
-                  .sort((a, b) => b.currentOccupancy - a.currentOccupancy)
-                  .filter(town =>
-                    sortedRecentTowns
-                      ? indexOf(
-                          sortedRecentTowns.map(t => t.townID),
-                          town.townID,
-                        ) === -1
-                      : true,
-                  ),
-              );
-            }
-          });
-        });
-    } else {
-      townsService.listTowns().then(towns => {
-        if (isMounted.current) {
-          setCurrentPublicTowns(towns);
-        }
-      });
+      const userVisits = await usersService.listRecentlyVistedTowns(uid);
+      recentlyVisited = userVisits
+        .sort((a, b) => new Date(b.lastVisited).valueOf() - new Date(a.lastVisited).valueOf())
+        .splice(0, 3)
+        .map(visit => visit.townId);
+    }
+    const publicTowns = alltowns
+      .filter(town => !recentlyVisited.includes(town.townID))
+      .sort((a, b) => b.currentOccupancy - a.currentOccupancy);
+    const recentlyVisitedTowns = recentlyVisited
+      .map(id => alltowns.find(town => town.townID === id))
+      .filter(town => town) as Town[];
+    if (isMounted.current) {
+      setCurrentPublicTowns(publicTowns);
+      setRecentlyVisitedTowns(recentlyVisitedTowns);
     }
   }, [townsService, uid, usersService]);
 
@@ -373,7 +350,7 @@ export default function TownSelection({
               <Table>
                 <TableCaption placement='top'>Recently Visited Towns</TableCaption>
                 <Thead>
-                  <Tr>
+                  <Tr data-testid='recentlyVisited'>
                     <Th>Town Name</Th>
                     <Th>Town ID</Th>
                     <Th>Activity</Th>
@@ -381,7 +358,7 @@ export default function TownSelection({
                 </Thead>
                 <Tbody>
                   {recentlyVistedTowns?.map(town => (
-                    <Tr key={town.townID}>
+                    <Tr data-testid='recentlyVisited' key={town.townID}>
                       <Td role='cell'>{town.friendlyName}</Td>
                       <Td role='cell'>{town.townID}</Td>
                       <Td role='cell'>
@@ -402,7 +379,7 @@ export default function TownSelection({
               <Table>
                 <TableCaption placement='top'>Other Publicly Listed Towns</TableCaption>
                 <Thead>
-                  <Tr>
+                  <Tr data-testid='publiclyListed'>
                     <Th>Town Name</Th>
                     <Th>Town ID</Th>
                     <Th>Activity</Th>
@@ -410,7 +387,7 @@ export default function TownSelection({
                 </Thead>
                 <Tbody>
                   {currentPublicTowns?.map(town => (
-                    <Tr key={town.townID}>
+                    <Tr data-testid='publiclyListed' key={town.townID}>
                       <Td role='cell'>{town.friendlyName}</Td>
                       <Td role='cell'>{town.townID}</Td>
                       <Td role='cell'>

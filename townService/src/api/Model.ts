@@ -1,4 +1,15 @@
 /**
+ * The public-facing model that represents a town visit. This is used to track which towns a user has visited.
+ */
+export interface TownVisit {
+  /** The ID of the town that was visited */
+  townId: string;
+
+  /** The date that the town was last visited */
+  lastVisited: Date;
+}
+
+/**
  * The public-facing model that represents a town. More information about the town
  * is available for users who join it.
  */

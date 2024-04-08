@@ -4,7 +4,7 @@ import InvalidParametersError from '../lib/InvalidParametersError';
 import { UserStats } from '../types/CoveyTownSocket';
 import { prisma } from '../Utils';
 import TownsStore from '../lib/TownsStore';
-import { Town } from '../api/Model';
+import { TownVisit } from '../api/Model';
 
 /**
  * This is the town route
@@ -18,7 +18,7 @@ export class UsersController extends Controller {
 
   @Get('{userID}/recentlyVisitedTowns')
   @Response<InvalidParametersError>(400, 'Invalid values Specified')
-  public async listRecentlyVistedTowns(@Path() userID: string): Promise<Town[]> {
+  public async listRecentlyVistedTowns(@Path() userID: string): Promise<TownVisit[]> {
     // I don't know why this has to be findMany, but findUnique doesn't work
     const userRecords = await prisma.user.findMany({
       where: {
@@ -31,9 +31,10 @@ export class UsersController extends Controller {
     if (userRecords.length === 0) {
       return [];
     }
-    const out = this._townsStore
-      .getTowns()
-      .filter(town => userRecords[0].townVisits.some(visit => visit.townId === town.townID));
+    const currentActiveTownIDs = this._townsStore.getTowns().map(town => town.townID);
+    const out = userRecords[0].townVisits
+      .filter(visit => currentActiveTownIDs.indexOf(visit.townId) !== -1)
+      .map(visit => ({ townId: visit.townId, lastVisited: visit.visitedAt }));
     return out;
   }
 

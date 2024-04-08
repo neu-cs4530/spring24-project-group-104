@@ -154,16 +154,12 @@ describe('UsersController', () => {
       const secondTown = await townsStore.createTown('secondTown', true);
       const expectedTowns = [
         {
-          townID: firstTown.townID,
-          friendlyName: firstTown.friendlyName,
-          currentOccupancy: 0,
-          maximumOccupancy: 50,
+          townId: firstTown.townID,
+          lastVisited: new Date(),
         },
         {
-          townID: secondTown.townID,
-          friendlyName: secondTown.friendlyName,
-          currentOccupancy: 0,
-          maximumOccupancy: 50,
+          townId: secondTown.townID,
+          lastVisited: new Date(),
         },
       ];
 
@@ -186,7 +182,8 @@ describe('UsersController', () => {
         .create({
           data: {
             userId: userID,
-            townId: firstTown.townID,
+            townId: expectedTowns[0].townId,
+            visitedAt: expectedTowns[0].lastVisited,
           },
         })
         .then(res => res);
@@ -194,7 +191,8 @@ describe('UsersController', () => {
         .create({
           data: {
             userId: userID,
-            townId: secondTown.townID,
+            townId: expectedTowns[1].townId,
+            visitedAt: expectedTowns[1].lastVisited,
           },
         })
         .then(res => res);

@@ -26,17 +26,21 @@ import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import UsernameUpdatePopup from '../Auth/UpdateUsernamePopup';
-
+import { signOutCurrentUser } from '../../auth/firebaseAuth';
 interface TownSelectionProps {
   userName: string;
   setUsername: (newUsername: string) => void;
   uid: string;
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
+  setTutorialCompleted: (tutorialCompleted: boolean) => void;
 }
 
 export default function TownSelection({
   userName,
   setUsername,
   uid,
+  setIsLoggedIn,
+  setTutorialCompleted,
 }: TownSelectionProps): JSX.Element {
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
@@ -260,6 +264,30 @@ export default function TownSelection({
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOutCurrentUser();
+      setIsLoggedIn(false);
+      setTutorialCompleted(false);
+      toast({
+        title: 'Logged out successfully.',
+        description: 'You have been logged out.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Logout failed.',
+        description: 'An error occurred while trying to log out. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <>
       <form>
@@ -271,6 +299,11 @@ export default function TownSelection({
                 {userName}
               </Text>
             </Heading>
+            <Flex justifyContent='flex-end' mt='4'>
+              <Button colorScheme='red' onClick={handleLogout}>
+                Log Out
+              </Button>
+            </Flex>
           </Box>
           <UsernameUpdatePopup userName={userName} setUserName={setUsername} />
           <Box mt={4} borderWidth='1px' borderRadius='lg'>

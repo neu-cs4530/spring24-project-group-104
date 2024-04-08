@@ -21,12 +21,16 @@ export enum Steps {
  deviceSelectionStep,
 }
 
+interface PreJoinScreensProps {
+  isLoggedIn: boolean;
+  setIsLoggedIn: (value: boolean) => void;
+}
 
-export default function PreJoinScreens() {
+
+export default function PreJoinScreens({ isLoggedIn, setIsLoggedIn }: PreJoinScreensProps): JSX.Element {
  const { user } = useAppState();
  const { getAudioAndVideoTracks } = useVideoContext();
  const [mediaError, setMediaError] = useState<Error>();
- const [isLoggedIn, setIsLoggedIn] = useState(false);
  const [tutorialCompleted, setTutorialCompleted] = useState(false);
  const [username, setUsername] = useState('');
  const [uid, setUID] = useState('');
@@ -115,7 +119,7 @@ else if (!tutorialCompleted) {
   content = (
     <Box>
       <DeviceSelectionScreen />
-      <TownSelection userName={username} setUsername={setUsername} uid={uid} />
+      <TownSelection userName={username} setUsername={setUsername} uid={uid} setIsLoggedIn={setIsLoggedIn} setTutorialCompleted={setTutorialCompleted}/>
     </Box>
   );
 }

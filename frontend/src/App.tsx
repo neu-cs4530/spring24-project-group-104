@@ -22,6 +22,7 @@ import ToggleChatButton from './components/VideoCall/VideoFrontend/components/Bu
 
 function App() {
   const [townController, setTownController] = useState<TownController | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const { error, setError } = useAppState();
   const connectionOptions = useConnectionOptions();
@@ -40,7 +41,7 @@ function App() {
       </TownControllerContext.Provider>
     );
   } else {
-    page = <PreJoinScreens />;
+    page = <PreJoinScreens isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />;
   }
   const url = process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL;
   assert(url, 'NEXT_PUBLIC_TOWNS_SERVICE_URL must be defined');

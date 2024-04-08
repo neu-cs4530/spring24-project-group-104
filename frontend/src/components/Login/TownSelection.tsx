@@ -42,26 +42,42 @@ export default function TownSelection({
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
   const [currentPublicTowns, setCurrentPublicTowns] = useState<Town[]>();
+  const [recentlyVistedTowns, setRecentlyVisitedTowns] = useState<Town[]>();
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const loginController = useLoginController();
-  const { setTownController, townsService } = loginController;
+  const { setTownController, townsService, usersService } = loginController;
   const { connect: videoConnect } = useVideoContext();
 
   const toast = useToast();
 
   const isMounted = useRef(true);
 
-  const updateTownListings = useCallback(() => {
-    townsService.listTowns().then(towns => {
-      if (isMounted.current) {
-        setCurrentPublicTowns(towns.sort((a, b) => b.currentOccupancy - a.currentOccupancy));
-      }
-    });
-  }, [townsService]);
+  const updateTownListings = useCallback(async () => {
+    const alltowns = await townsService.listTowns();
+    let recentlyVisited = new Array<string>();
+    if (uid) {
+      const userVisits = await usersService.listRecentlyVistedTowns(uid);
+      recentlyVisited = userVisits
+        .sort((a, b) => new Date(b.lastVisited).valueOf() - new Date(a.lastVisited).valueOf())
+        .splice(0, 3)
+        .map(visit => visit.townId);
+    }
+    const publicTowns = alltowns
+      .filter(town => !recentlyVisited.includes(town.townID))
+      .sort((a, b) => b.currentOccupancy - a.currentOccupancy);
+    const recentlyVisitedTowns = recentlyVisited
+      .map(id => alltowns.find(town => town.townID === id))
+      .filter(town => town) as Town[];
+    if (isMounted.current) {
+      setCurrentPublicTowns(publicTowns);
+      setRecentlyVisitedTowns(recentlyVisitedTowns);
+    }
+  }, [townsService, uid, usersService]);
 
   useEffect(() => {
     updateTownListings();
     const timer = setInterval(updateTownListings, 2000);
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
       clearInterval(timer);
@@ -331,9 +347,38 @@ export default function TownSelection({
             </Heading>
             <Box maxH='500px' overflowY='scroll'>
               <Table>
-                <TableCaption placement='bottom'>Publicly Listed Towns</TableCaption>
+                <TableCaption placement='top'>Recently Visited Towns</TableCaption>
                 <Thead>
-                  <Tr>
+                  <Tr data-testid='recentlyVisited'>
+                    <Th>Town Name</Th>
+                    <Th>Town ID</Th>
+                    <Th>Activity</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {recentlyVistedTowns?.map(town => (
+                    <Tr data-testid='recentlyVisited' key={town.townID}>
+                      <Td role='cell'>{town.friendlyName}</Td>
+                      <Td role='cell'>{town.townID}</Td>
+                      <Td role='cell'>
+                        {town.currentOccupancy}/{town.maximumOccupancy}
+                        <Button
+                          onClick={() => handleJoin(town.townID)}
+                          disabled={town.currentOccupancy >= town.maximumOccupancy || isJoining}
+                          isLoading={isJoining}>
+                          Connect
+                        </Button>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+            <Box maxH='500px' overflowY='scroll'>
+              <Table>
+                <TableCaption placement='top'>Other Publicly Listed Towns</TableCaption>
+                <Thead>
+                  <Tr data-testid='publiclyListed'>
                     <Th>Town Name</Th>
                     <Th>Town ID</Th>
                     <Th>Activity</Th>
@@ -341,7 +386,7 @@ export default function TownSelection({
                 </Thead>
                 <Tbody>
                   {currentPublicTowns?.map(town => (
-                    <Tr key={town.townID}>
+                    <Tr data-testid='publiclyListed' key={town.townID}>
                       <Td role='cell'>{town.friendlyName}</Td>
                       <Td role='cell'>{town.townID}</Td>
                       <Td role='cell'>

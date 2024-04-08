@@ -9,7 +9,13 @@ import { nanoid } from 'nanoid';
 import { act } from 'react-dom/test-utils';
 import * as TownController from '../../classes/TownController';
 import { LoginController } from '../../contexts/LoginControllerContext';
-import { CancelablePromise, Town, TownsService } from '../../generated/client';
+import {
+  CancelablePromise,
+  Town,
+  TownsService,
+  TownVisit,
+  UsersService,
+} from '../../generated/client';
 import * as useLoginController from '../../hooks/useLoginController';
 import { mockTownController } from '../../TestUtils';
 import TownSelection from './TownSelection';
@@ -98,6 +104,7 @@ export function wrappedTownSelection() {
 
 describe('Town Selection', () => {
   let mockTownsService: MockProxy<TownsService>;
+  let mockUsersService: MockProxy<UsersService>;
   let useLoginControllerSpy: jest.SpyInstance<LoginController, []>;
   let mockLoginController: MockProxy<LoginController>;
   let coveyTownControllerConstructorSpy: jest.SpyInstance<
@@ -109,6 +116,7 @@ describe('Town Selection', () => {
 
   beforeAll(() => {
     mockTownsService = mock<TownsService>();
+    mockUsersService = mock<UsersService>();
     useLoginControllerSpy = jest.spyOn(useLoginController, 'default');
     mockLoginController = mock<LoginController>();
     mockLoginController.townsService = mockTownsService;
@@ -120,6 +128,7 @@ describe('Town Selection', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     mockReset(mockTownsService);
+    mockReset(mockUsersService);
     mockClear(useLoginControllerSpy);
     mockClear(mockLoginController);
     mockClear(mockedTownController);
@@ -208,6 +217,100 @@ describe('Town Selection', () => {
       });
       expect(renderData.queryByText('demoTownName')).not.toBeInTheDocument();
     });
+
+    it('sorts recently visited towns by recency of visit, descending', async () => {
+      let suffix = nanoid();
+      let expectedTowns = [] as Town[];
+      let visits = [] as TownVisit[];
+      const init = async () => {
+        suffix = nanoid();
+        expectedTowns = (await listTowns(suffix)).splice(0, 5);
+        visits = [
+          {
+            townId: expectedTowns[0].townID,
+            lastVisited: new Date('2021-01-01').toString(),
+          },
+          {
+            townId: expectedTowns[1].townID,
+            lastVisited: new Date('2021-01-02').toString(),
+          },
+          {
+            townId: expectedTowns[2].townID,
+            lastVisited: new Date('2021-01-03').toString(),
+          },
+          {
+            townId: expectedTowns[3].townID,
+            lastVisited: new Date('2021-01-04').toString(),
+          },
+          {
+            townId: expectedTowns[4].townID,
+            lastVisited: new Date('2021-01-05').toString(),
+          },
+        ] as TownVisit[];
+        // Sort by most recently visited
+        expectedTowns.sort(
+          (a, b) =>
+            new Date(
+              (visits.find((v: { townId: any }) => v.townId === b.townID) as TownVisit).lastVisited,
+            ).valueOf() -
+            new Date(
+              (visits.find((v: { townId: any }) => v.townId === a.townID) as TownVisit).lastVisited,
+            ).valueOf(),
+        );
+        mockTownsService.listTowns.mockImplementation(() => listTowns(suffix));
+        mockUsersService.listRecentlyVistedTowns.mockImplementation(() =>
+          toCancelablePromise(visits),
+        );
+      };
+      await init();
+
+      const renderData = render(wrappedTownSelection());
+      await waitFor(() => {
+        expectedTowns.map(town =>
+          expect(renderData.getByText(town.friendlyName)).toBeInTheDocument(),
+        );
+      });
+      let rows = renderData
+        .getAllByRole('row')
+        .filter(each => each.dataset.testid === 'recentlyVisited');
+      for (let i = 1; i < rows.length; i += 1) {
+        // off-by-one for the header row
+        const existing = within(rows[i]).getByText(expectedTowns[i - 1].friendlyName);
+        expect(existing).toBeInTheDocument();
+        for (let j = 0; j < expectedTowns.length; j += 1) {
+          if (j !== i - 1) {
+            expect(
+              within(rows[i]).queryByText(expectedTowns[j].friendlyName),
+            ).not.toBeInTheDocument();
+          }
+        }
+      }
+
+      // Now, do that all again to make sure it sorts EVERY run
+      await init();
+      jest.advanceTimersByTime(2000);
+      await waitFor(() =>
+        expectedTowns.map(town =>
+          expect(renderData.getByText(town.friendlyName)).toBeInTheDocument(),
+        ),
+      );
+      rows = renderData
+        .getAllByRole('row')
+        .filter(each => each.dataset.testid === 'recentlyVisited');
+      for (let i = 1; i < rows.length; i += 1) {
+        // off-by-one for the header row
+        const existing = within(rows[i]).getByText(expectedTowns[i - 1].friendlyName);
+        expect(existing).toBeInTheDocument();
+        for (let j = 0; j < expectedTowns.length; j += 1) {
+          if (j !== i - 1) {
+            expect(
+              within(rows[i]).queryByText(expectedTowns[j].friendlyName),
+            ).not.toBeInTheDocument();
+          }
+        }
+      }
+    });
+
     it('sorts towns by occupancy descending', async () => {
       const suffix1 = nanoid();
       const suffix2 = nanoid();
@@ -225,7 +328,9 @@ describe('Town Selection', () => {
         );
       });
       // All towns are in doc, now make sure they are sorted by occupancy
-      let rows = renderData.getAllByRole('row');
+      let rows = renderData
+        .getAllByRole('row')
+        .filter(each => each.dataset.testid === 'publiclyListed');
       for (let i = 1; i < rows.length; i += 1) {
         // off-by-one for the header row
         const existing = within(rows[i]).getByText(expectedTowns1[i - 1].friendlyName);
@@ -248,10 +353,11 @@ describe('Town Selection', () => {
       );
 
       // All towns are in doc, now make sure they are sorted by occupancy
-      rows = renderData.getAllByRole('row');
+      rows = renderData
+        .getAllByRole('row')
+        .filter(each => each.dataset.testid === 'publiclyListed');
       for (let i = 1; i < rows.length; i += 1) {
         // off-by-one for the header row
-        // console.log(rows[i]);
         const existing = within(rows[i]).getByText(expectedTowns2[i - 1].friendlyName);
         expect(existing).toBeInTheDocument();
         for (let j = 0; j < expectedTowns2.length; j += 1) {

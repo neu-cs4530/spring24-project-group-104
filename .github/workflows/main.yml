@@ -51,7 +51,7 @@ jobs:
         env: # Pass the Twilio secrets into environmental variables for the backend tests to use
           DATABASE_URL: postgresql://postgres:password123@localhost:5432/mydb
           DIRECT_URL: postgresql://postgres:password123@localhost:5432/mydb
-        run: cd townService; npm install && npx prisma migrate dev
+        run: cd townService; npm install && npx prisma migrate deploy
 
       - name: Build and test backend service
         env: # Pass the Twilio secrets into environmental variables for the backend tests to use

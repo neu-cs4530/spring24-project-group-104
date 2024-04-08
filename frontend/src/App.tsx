@@ -45,8 +45,9 @@ function App() {
   const url = process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL;
   assert(url, 'NEXT_PUBLIC_TOWNS_SERVICE_URL must be defined');
   const townsService = new TownsServiceClient({ BASE: url }).towns;
+  const usersService = new TownsServiceClient({ BASE: url }).users;
   return (
-    <LoginControllerContext.Provider value={{ setTownController, townsService }}>
+    <LoginControllerContext.Provider value={{ setTownController, townsService, usersService }}>
       <UnsupportedBrowserWarning>
         <VideoProvider options={connectionOptions} onError={setError} onDisconnect={onDisconnect}>
           <ErrorDialog dismissError={() => setError(null)} error={error} />
@@ -64,6 +65,8 @@ function DebugApp(): JSX.Element {
     const url = process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL;
     assert(url, 'NEXT_PUBLIC_TOWNS_SERVICE_URL must be defined');
     const townsService = new TownsServiceClient({ BASE: url }).towns;
+    const usersService = new TownsServiceClient({ BASE: url }).users;
+
     async function getOrCreateDebugTownID() {
       const towns = await townsService.listTowns();
       const existingTown = towns.find(town => town.friendlyName === DEBUG_TOWN_NAME);
@@ -97,6 +100,7 @@ function DebugApp(): JSX.Element {
         loginController: {
           setTownController: () => {},
           townsService,
+          usersService,
         },
         userName: nanoid(),
       });

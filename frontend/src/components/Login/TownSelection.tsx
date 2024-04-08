@@ -26,7 +26,6 @@ import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
 import UsernameUpdatePopup from '../Auth/UpdateUsernamePopup';
-import { indexOf } from 'lodash';
 
 interface TownSelectionProps {
   userName: string;

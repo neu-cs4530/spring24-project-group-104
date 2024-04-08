@@ -361,7 +361,6 @@ export default class Town {
    * @param token
    */
   public getPlayerBySessionToken(token: string): Player | undefined {
-    console.log(this.players);
     return this.players.find(eachPlayer => eachPlayer.sessionToken === token);
   }
 

@@ -12,5 +12,6 @@
     "./frontend",
     "./townService",
   ],
-  "jest.runMode": "on-demand"
-}
+  "jest.runMode": "on-demand",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  }

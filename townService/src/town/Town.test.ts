@@ -493,6 +493,58 @@ describe('Town', () => {
         const disconnectHandler = getEventListener(playerToLeave.socket, 'disconnect');
         disconnectHandler('forced close');
       }
+      it("Updates the player's time spent and last login on disconnect", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2017-01-01T01:00:00Z'));
+
+        const timeSpentPlayer = mockPlayer(town.townID);
+        const timeSpentPlayerObj = await town.addPlayer(
+          timeSpentPlayer.userName,
+          timeSpentPlayer.socket,
+          'testPlayerTS',
+        );
+
+        // Get the user from the database before disconnecting
+        const userBefore = await prisma.user.findFirst({
+          where: { id: 'testPlayerTS' },
+        });
+
+        jest.setSystemTime(new Date('2017-01-01T01:00:05Z'));
+
+        // Advance the system time by 5 seconds
+        const connectionDuration = 5;
+        jest.advanceTimersByTime(connectionDuration * 1000);
+
+        // Disconnect the player and wait for the Prisma calls to complete
+        // eslint-disable-next-line no-async-promise-executor
+        await new Promise<void>(async resolve => {
+          await disconnectPlayer(timeSpentPlayer);
+          resolve();
+        });
+
+        // Get the user from the database after disconnecting
+        const userAfter = await prisma.user.findFirst({
+          where: { id: 'testPlayerTS' },
+        });
+
+        // Check if the user's totalTimeSpent has been updated correctly
+        expect(userAfter?.totalTimeSpent).toBeGreaterThanOrEqual(userBefore?.totalTimeSpent ?? 0);
+
+        // Check if the user's lastLogin has been updated
+        expect(userAfter?.lastLogin).not.toBe(userBefore?.lastLogin);
+
+        await prisma.townVisit.deleteMany({
+          where: { userId: 'testPlayerTS' },
+        });
+
+        await prisma.user.delete({
+          where: { id: 'testPlayerTS' },
+        });
+
+        // Reset the system time and timers after the test
+        jest.useRealTimers();
+        jest.clearAllTimers();
+      });
       it("Invalidates the players's session token", async () => {
         const token = player.sessionToken;
 

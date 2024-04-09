@@ -25,6 +25,8 @@ describe('Player', () => {
             .then((res: User | null) => {
               expect(res).toBeDefined();
               expect(res?.displayName).toBe(player.userName);
+              expect(res?.lastLogin).toBeDefined();
+              expect(res?.totalTimeSpent).toBe(0);
             }),
         )
         .then(x => prisma.user.delete({ where: { id: player.id } }));

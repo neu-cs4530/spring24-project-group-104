@@ -8,7 +8,6 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { CheckIcon, CloseIcon, DeleteIcon } from '@chakra-ui/icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import InteractableAreasList from './InteractableAreasList';
 import PlayersList from './PlayersList';
@@ -271,7 +270,6 @@ export default function SocialSidebar(): JSX.Element {
                   <Button
                     size='xs'
                     colorScheme='green'
-                    leftIcon={<CheckIcon />}
                     margin={1}
                     onClick={() => handleAcceptFriendRequest(request.sender.id)}
                     mr={2}>
@@ -280,7 +278,6 @@ export default function SocialSidebar(): JSX.Element {
                   <Button
                     size='xs'
                     colorScheme='red'
-                    leftIcon={<CloseIcon />}
                     margin={1}
                     onClick={() => handleRejectFriendRequest(request.sender.id)}>
                     Reject
@@ -311,7 +308,6 @@ export default function SocialSidebar(): JSX.Element {
                 <Button
                   size='xs'
                   colorScheme='red'
-                  leftIcon={<DeleteIcon />}
                   onClick={() => handleDeleteFriendRequest(request.receiver.id)}>
                   Delete
                 </Button>

@@ -91,11 +91,7 @@ export default function TownMap(): JSX.Element {
 
       <div id='map-container' />
       <div id='social-container'>
-        <SocialSidebar
-          userID={coveyTownController.userID}
-          userName1={coveyTownController.userName}
-          players={coveyTownController.players}
-        />
+        <SocialSidebar />
       </div>
     </div>
   );

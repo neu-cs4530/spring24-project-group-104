@@ -9,7 +9,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon, DeleteIcon } from '@chakra-ui/icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import InteractableAreasList from './InteractableAreasList';
 import PlayersList from './PlayersList';
 import useTownController from '../../hooks/useTownController';
@@ -35,7 +35,7 @@ export default function SocialSidebar(): JSX.Element {
   const [friendList, setFriendList] = useState([]);
   const toast = useToast();
 
-  const fetchFriendRequests = async () => {
+  const fetchFriendRequests = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8081/api/friends/requests/${userID}`);
       if (response.ok) {
@@ -48,9 +48,9 @@ export default function SocialSidebar(): JSX.Element {
     } catch (error) {
       console.error('Error calling friend requests route:', error);
     }
-  };
+  }, [userID]);
 
-  const getUserFriends = async () => {
+  const getUserFriends = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8081/api/friends/${userID}`);
       if (response.ok) {
@@ -62,7 +62,7 @@ export default function SocialSidebar(): JSX.Element {
     } catch (error) {
       console.error('Error calling friend list route:', error);
     }
-  };
+  }, [userID]);
 
   useEffect(() => {
     fetchFriendRequests();

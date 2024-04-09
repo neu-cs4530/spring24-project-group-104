@@ -72,11 +72,11 @@ export default function SocialSidebar(): JSX.Element {
     return () => {
       clearInterval(intervalId);
     };
-  }, [userID]);
+  }, [fetchFriendRequests, userID]);
 
   useEffect(() => {
     getUserFriends();
-  }, [incomingRequests, outgoingRequests]);
+  }, [getUserFriends, incomingRequests, outgoingRequests]);
 
   const getIDFromUser = (userName: string) => {
     for (const player of players) {

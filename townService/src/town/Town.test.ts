@@ -498,11 +498,7 @@ describe('Town', () => {
         jest.setSystemTime(new Date('2017-01-01T01:00:00Z'));
 
         const timeSpentPlayer = mockPlayer(town.townID);
-        const timeSpentPlayerObj = await town.addPlayer(
-          timeSpentPlayer.userName,
-          timeSpentPlayer.socket,
-          'testPlayerTS',
-        );
+        await town.addPlayer(timeSpentPlayer.userName, timeSpentPlayer.socket, 'testPlayerTS');
 
         // Get the user from the database before disconnecting
         const userBefore = await prisma.user.findFirst({

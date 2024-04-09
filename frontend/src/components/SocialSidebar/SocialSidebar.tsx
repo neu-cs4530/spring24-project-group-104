@@ -239,7 +239,6 @@ export default function SocialSidebar(): JSX.Element {
         placeholder="Enter player's username"
         value={userName2}
         onChange={e => {
-          e.preventDefault();
           setUserName2(e.target.value);
         }}
       />

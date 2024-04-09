@@ -30,6 +30,17 @@ export default function UsernameUpdatePopup({
   const toast = useToast();
 
   const handleUsernameUpdate = async () => {
+    if (tempUsername.includes(' ')) {
+      toast({
+        title: 'Error creating account.',
+        description: 'Username cannot contain spaces.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
     if (!tempUsername.trim()) {
       toast({
         title: 'Invalid username',

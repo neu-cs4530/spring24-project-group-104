@@ -57,6 +57,27 @@ function StatsDialog({ open, onClose }: PropsWithChildren<StatsDialogProps>) {
         }
     }, [townController, open])
 
+    function formatTimeSpent(timeInSeconds: number) {
+        const hours = Math.floor(timeInSeconds / 3600);
+        const minutes = Math.floor((timeInSeconds % 3600) / 60);
+        const seconds = timeInSeconds % 60;
+
+        const formatUnit = (value: number, unit: string) => value === 1 ? `${value} ${unit}` : `${value} ${unit}s`;
+
+        const formattedHours = hours > 0 ? formatUnit(hours, 'Hour') : '';
+        const formattedMinutes = minutes > 0 ? formatUnit(minutes, 'Minute') : '';
+        const formattedSeconds = formatUnit(seconds, 'Second');
+      
+        const timeComponents = [formattedHours, formattedMinutes, formattedSeconds].filter(Boolean);
+      
+        if (timeComponents.length === 2 && formattedMinutes === '') {
+          return timeComponents.join(' ').replace(/, $/, '');
+        } else {
+          return timeComponents.join(', ').replace(/, $/, '');
+        }
+
+      }
+
     return (
         <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
         <DialogTitle>User Stats</DialogTitle>
@@ -65,10 +86,12 @@ function StatsDialog({ open, onClose }: PropsWithChildren<StatsDialogProps>) {
             {stats ? 
                 <>
                     <DialogContentText>First Joined: {stats.firstJoined}</DialogContentText>
-                    <DialogContentText>Time Spent Online: {stats.timeSpent}</DialogContentText>
-                    {stats.gameRecords.map(record => <>
-                        <DialogContentText>{record.gameName} record: {record.wins} wins, {record.losses} losses, {Math.round(record.wins/(record.losses + record.wins)*100)}% win rate</DialogContentText>
-                    </>)}
+                    <DialogContentText>Time Spent Online in Covey.Town (Not including this session): {stats.timeSpent !== null ? formatTimeSpent(stats.timeSpent) : 'N/A'}</DialogContentText>
+                    {stats.gameRecords.map(record => (
+                        <DialogContentText key={record.gameName}>
+                            {record.gameName} record: {record.wins} wins, {record.losses} losses, {Math.round(record.wins/(record.losses + record.wins)*100)}% win rate
+                        </DialogContentText>
+                    ))}
                 </> 
             : <DialogContentText>Loading...</DialogContentText> }
         </DialogContent>

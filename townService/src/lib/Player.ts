@@ -92,6 +92,7 @@ export default class Player {
             id: this.id,
             displayName: this.userName,
             lastLogin: new Date(),
+            totalTimeSpent: 0,
           },
         });
       });

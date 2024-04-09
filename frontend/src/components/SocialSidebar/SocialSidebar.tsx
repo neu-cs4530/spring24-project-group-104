@@ -14,13 +14,24 @@ import InteractableAreasList from './InteractableAreasList';
 import PlayersList from './PlayersList';
 import useTownController from '../../hooks/useTownController';
 
+interface FriendRequest {
+  sender: {
+    id: string;
+    displayName: string;
+  };
+  receiver: {
+    id: string;
+    displayName: string;
+  };
+}
+
 export default function SocialSidebar(): JSX.Element {
   const coveyTownController = useTownController();
   const userID = coveyTownController.userID;
   const players = coveyTownController.players;
   const [userName2, setUserName2] = useState('');
-  const [incomingRequests, setIncomingRequests] = useState([]);
-  const [outgoingRequests, setOutgoingRequests] = useState([]);
+  const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([]);
   const [friendList, setFriendList] = useState([]);
   const toast = useToast();
 
@@ -211,7 +222,7 @@ export default function SocialSidebar(): JSX.Element {
       <Box border='1px' borderColor='gray.200' borderRadius='md' p={2}>
         {friendList.length > 0 ? (
           <VStack align='stretch' spacing={2}>
-            {friendList.map(friend => (
+            {friendList.map((friend: { id: string; displayName: string }) => (
               <Box key={friend.id} bg='gray.50' p={1}>
                 <Text>{friend.displayName}</Text>
               </Box>
@@ -248,7 +259,7 @@ export default function SocialSidebar(): JSX.Element {
           <VStack align='stretch' spacing={2}>
             {incomingRequests.map(request => (
               <Box
-                key={request.sender.id}
+                key={(request as { sender: { id: string } }).sender.id}
                 bg='gray.50'
                 p={2}
                 borderRadius='md'

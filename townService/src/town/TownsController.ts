@@ -177,7 +177,6 @@ export class TownsController extends Controller {
     @Header('X-Session-Token') sessionToken: string,
     @Query() interactableID?: string,
   ): Promise<ChatMessage[]> {
-    console.log(sessionToken);
     const town = this._townsStore.getTownByID(townID);
     if (!town) {
       throw new InvalidParametersError('Invalid values specified');

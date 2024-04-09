@@ -84,6 +84,7 @@ export default class Player {
             },
             data: {
               lastLogin: new Date(),
+              displayName: this.userName,
             },
           });
         }

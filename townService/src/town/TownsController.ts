@@ -177,6 +177,7 @@ export class TownsController extends Controller {
     @Header('X-Session-Token') sessionToken: string,
     @Query() interactableID?: string,
   ): Promise<ChatMessage[]> {
+    console.log(sessionToken);
     const town = this._townsStore.getTownByID(townID);
     if (!town) {
       throw new InvalidParametersError('Invalid values specified');
@@ -206,6 +207,12 @@ export class TownsController extends Controller {
 
     const town = this._townsStore.getTownByID(townID);
     if (!town) {
+      socket.disconnect(true);
+      return;
+    }
+
+    const playerAlreadyConnected = town.players.find(player => player.id === uid);
+    if (playerAlreadyConnected) {
       socket.disconnect(true);
       return;
     }

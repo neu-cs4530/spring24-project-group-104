@@ -653,7 +653,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         resolve();
       });
       this._socket.on('disconnect', () => {
-        reject(new Error('Invalid town ID'));
+        reject(
+          new Error(
+            'Cannot connect to town. It is possible you are already logged in and connected to this town elsewhere.',
+          ),
+        );
       });
     });
   }

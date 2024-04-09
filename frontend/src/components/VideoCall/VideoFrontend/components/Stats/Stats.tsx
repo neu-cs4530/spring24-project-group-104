@@ -86,7 +86,7 @@ function StatsDialog({ open, onClose }: PropsWithChildren<StatsDialogProps>) {
             {stats ? 
                 <>
                     <DialogContentText>First Joined: {stats.firstJoined}</DialogContentText>
-                    <DialogContentText>Time Spent Online in Covey.Town: {stats.timeSpent !== null ? formatTimeSpent(stats.timeSpent) : 'N/A'}</DialogContentText>
+                    <DialogContentText>Time Spent Online in Covey.Town (Not including this session): {stats.timeSpent !== null ? formatTimeSpent(stats.timeSpent) : 'N/A'}</DialogContentText>
                     {stats.gameRecords.map(record => (
                         <DialogContentText key={record.gameName}>
                             {record.gameName} record: {record.wins} wins, {record.losses} losses, {Math.round(record.wins/(record.losses + record.wins)*100)}% win rate

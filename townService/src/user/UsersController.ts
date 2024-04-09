@@ -34,7 +34,18 @@ export class UsersController extends Controller {
     const currentActiveTownIDs = this._townsStore.getTowns().map(town => town.townID);
     const out = userRecords[0].townVisits
       .filter(visit => currentActiveTownIDs.indexOf(visit.townId) !== -1)
-      .map(visit => ({ townId: visit.townId, lastVisited: visit.visitedAt }));
+      .map(visit => ({ townId: visit.townId, lastVisited: visit.visitedAt }))
+      .reduce((acc: TownVisit[], visit: TownVisit) => {
+        const existingRecord = acc.find(v => v.townId === visit.townId);
+        if (existingRecord) {
+          if (existingRecord.lastVisited < visit.lastVisited) {
+            return acc.map(v => (v.townId === visit.townId ? visit : v));
+          }
+          return acc;
+        }
+        return acc.concat([visit]);
+      }, []);
+
     return out;
   }
 

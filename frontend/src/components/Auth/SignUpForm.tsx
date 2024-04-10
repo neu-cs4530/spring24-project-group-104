@@ -78,7 +78,7 @@ export default function SignUpForm({ onLoginSuccess }: SignUpFormProps): JSX.Ele
         });
       }
     },
-    [username, email, password, toast, onLoginSuccess],
+    [username, email, password, toast, onLoginSuccess, usersService],
   );
   const toggleForm = () => setShowForm(!showForm);
 

@@ -46,7 +46,6 @@ export default function UsernameUpdatePopup({
         });
         return;
       }
-      
     if (tempUsername.includes(' ')) {
       toast({
         title: 'Error creating account.',

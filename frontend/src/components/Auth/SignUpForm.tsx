@@ -12,6 +12,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { signUpWithEmailPasswordAndUsername } from '../../auth/firebaseAuth';
+import useLoginController from '../../hooks/useLoginController';
 
 interface SignUpFormProps {
   onLoginSuccess: (username: string, uid: string) => void;
@@ -22,11 +23,25 @@ export default function SignUpForm({ onLoginSuccess }: SignUpFormProps): JSX.Ele
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showForm, setShowForm] = useState<boolean>(false);
+  const loginController = useLoginController();
+  const { usersService } = loginController;
   const toast = useToast();
 
   const handleSignUp = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+
+      const usernameExists = await usersService.userExists(username);
+      if (usernameExists) {
+        toast({
+          title: 'Error creating account.',
+          description: 'Username in use, please select another one.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
 
       if (username.includes(' ')) {
         toast({
@@ -63,7 +78,7 @@ export default function SignUpForm({ onLoginSuccess }: SignUpFormProps): JSX.Ele
         });
       }
     },
-    [username, email, password, toast, onLoginSuccess],
+    [username, email, password, toast, onLoginSuccess, usersService],
   );
   const toggleForm = () => setShowForm(!showForm);
 

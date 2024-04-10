@@ -16,11 +16,22 @@ import { TownVisit } from '../api/Model';
 export class UsersController extends Controller {
   private _townsStore: TownsStore = TownsStore.getInstance();
 
+  @Get('exists/{username}')
+  @Response<InvalidParametersError>(400, 'Invalid values Specified')
+  public async userExists(@Path() username: string): Promise<boolean> {
+    const userRecords = await prisma.user.findMany({
+      where: {
+        displayName: username,
+      },
+    });
+    return userRecords.length > 0;
+  }
+
   @Get('{userID}/recentlyVisitedTowns')
   @Response<InvalidParametersError>(400, 'Invalid values Specified')
   public async listRecentlyVistedTowns(@Path() userID: string): Promise<TownVisit[]> {
     // I don't know why this has to be findMany, but findUnique doesn't work
-    const userRecords = await prisma.user.findMany({
+    const userRecords = await prisma.user.findUnique({
       where: {
         id: userID,
       },
@@ -28,11 +39,11 @@ export class UsersController extends Controller {
         townVisits: true,
       },
     });
-    if (userRecords.length === 0) {
+    if (!userRecords) {
       return [];
     }
     const currentActiveTownIDs = this._townsStore.getTowns().map(town => town.townID);
-    const out = userRecords[0].townVisits
+    const out = userRecords.townVisits
       .filter(visit => currentActiveTownIDs.indexOf(visit.townId) !== -1)
       .map(visit => ({ townId: visit.townId, lastVisited: visit.visitedAt }))
       .reduce((acc: TownVisit[], visit: TownVisit) => {

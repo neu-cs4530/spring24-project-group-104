@@ -31,6 +31,7 @@ export default function SocialSidebar(): JSX.Element {
   const [userName2, setUserName2] = useState('');
   const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([]);
+  const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const [friendList, setFriendList] = useState([]);
   const toast = useToast();
 
@@ -89,6 +90,14 @@ export default function SocialSidebar(): JSX.Element {
     }
     return '';
   };
+
+  useEffect(() => {
+    if(isTextareaFocused){
+      coveyTownController.pause();
+    }else{
+      coveyTownController.unPause();
+    }
+  }, [isTextareaFocused, coveyTownController]);
 
   const handleSendRequest = async () => {
     const userID2 = getIDFromUser(userName2);
@@ -257,6 +266,8 @@ export default function SocialSidebar(): JSX.Element {
         onChange={e => {
           setUserName2(e.target.value);
         }}
+        onFocus={() => setIsTextareaFocused(true)}
+        onBlur={() => setIsTextareaFocused(false)}
       />
       <Button onClick={handleSendRequest}>Send Request</Button>
 

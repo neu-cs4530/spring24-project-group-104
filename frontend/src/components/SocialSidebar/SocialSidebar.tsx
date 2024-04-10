@@ -8,23 +8,33 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { CheckIcon, CloseIcon, DeleteIcon } from '@chakra-ui/icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import InteractableAreasList from './InteractableAreasList';
 import PlayersList from './PlayersList';
 import useTownController from '../../hooks/useTownController';
+
+interface FriendRequest {
+  sender: {
+    id: string;
+    displayName: string;
+  };
+  receiver: {
+    id: string;
+    displayName: string;
+  };
+}
 
 export default function SocialSidebar(): JSX.Element {
   const coveyTownController = useTownController();
   const userID = coveyTownController.userID;
   const players = coveyTownController.players;
   const [userName2, setUserName2] = useState('');
-  const [incomingRequests, setIncomingRequests] = useState([]);
-  const [outgoingRequests, setOutgoingRequests] = useState([]);
+  const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([]);
   const [friendList, setFriendList] = useState([]);
   const toast = useToast();
 
-  const fetchFriendRequests = async () => {
+  const fetchFriendRequests = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8081/api/friends/requests/${userID}`);
       if (response.ok) {
@@ -37,9 +47,9 @@ export default function SocialSidebar(): JSX.Element {
     } catch (error) {
       console.error('Error calling friend requests route:', error);
     }
-  };
+  }, [userID]);
 
-  const getUserFriends = async () => {
+  const getUserFriends = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8081/api/friends/${userID}`);
       if (response.ok) {
@@ -51,7 +61,7 @@ export default function SocialSidebar(): JSX.Element {
     } catch (error) {
       console.error('Error calling friend list route:', error);
     }
-  };
+  }, [userID]);
 
   useEffect(() => {
     fetchFriendRequests();
@@ -61,11 +71,11 @@ export default function SocialSidebar(): JSX.Element {
     return () => {
       clearInterval(intervalId);
     };
-  }, [userID]);
+  }, [fetchFriendRequests, userID]);
 
   useEffect(() => {
     getUserFriends();
-  }, [incomingRequests, outgoingRequests]);
+  }, [getUserFriends, incomingRequests, outgoingRequests]);
 
   const getIDFromUser = (userName: string) => {
     for (const player of players) {
@@ -211,7 +221,7 @@ export default function SocialSidebar(): JSX.Element {
       <Box border='1px' borderColor='gray.200' borderRadius='md' p={2}>
         {friendList.length > 0 ? (
           <VStack align='stretch' spacing={2}>
-            {friendList.map(friend => (
+            {friendList.map((friend: { id: string; displayName: string }) => (
               <Box key={friend.id} bg='gray.50' p={1}>
                 <Text>{friend.displayName}</Text>
               </Box>
@@ -229,7 +239,6 @@ export default function SocialSidebar(): JSX.Element {
         placeholder="Enter player's username"
         value={userName2}
         onChange={e => {
-          e.preventDefault();
           setUserName2(e.target.value);
         }}
       />
@@ -248,7 +257,7 @@ export default function SocialSidebar(): JSX.Element {
           <VStack align='stretch' spacing={2}>
             {incomingRequests.map(request => (
               <Box
-                key={request.sender.id}
+                key={(request as { sender: { id: string } }).sender.id}
                 bg='gray.50'
                 p={2}
                 borderRadius='md'
@@ -260,7 +269,6 @@ export default function SocialSidebar(): JSX.Element {
                   <Button
                     size='xs'
                     colorScheme='green'
-                    leftIcon={<CheckIcon />}
                     margin={1}
                     onClick={() => handleAcceptFriendRequest(request.sender.id)}
                     mr={2}>
@@ -269,7 +277,6 @@ export default function SocialSidebar(): JSX.Element {
                   <Button
                     size='xs'
                     colorScheme='red'
-                    leftIcon={<CloseIcon />}
                     margin={1}
                     onClick={() => handleRejectFriendRequest(request.sender.id)}>
                     Reject
@@ -300,7 +307,6 @@ export default function SocialSidebar(): JSX.Element {
                 <Button
                   size='xs'
                   colorScheme='red'
-                  leftIcon={<DeleteIcon />}
                   onClick={() => handleDeleteFriendRequest(request.receiver.id)}>
                   Delete
                 </Button>

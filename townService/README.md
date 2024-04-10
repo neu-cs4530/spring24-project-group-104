@@ -1,11 +1,9 @@
-
-
-## Local testing setup
+# Local testing setup
 To create postgres instance on docker, run this command: 
 
 `docker run --name postgres-container -e POSTGRES_PASSWORD=password123 -e POSTGRES_DB=mydb -p 5432:5432 -d postgres `
 
-To access the instance, set this are your DATABASE_URL: `"postgresql://postgres:password123@localhost:5432/mydb"`
+To access the instance, set this as your DATABASE_URL in .env: `"postgresql://postgres:password123@localhost:5432/mydb"`
 
 *** When testing locally, be sure to remove / comment out the `DIRECT_URL` in the schema.prisma file. 
 

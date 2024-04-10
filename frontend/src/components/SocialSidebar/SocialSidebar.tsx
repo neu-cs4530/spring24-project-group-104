@@ -36,7 +36,7 @@ export default function SocialSidebar(): JSX.Element {
 
   const fetchFriendRequests = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8081/api/friends/requests/${userID}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests/${userID}`);
       if (response.ok) {
         const data = await response.json();
         setIncomingRequests(data.incoming);
@@ -51,7 +51,7 @@ export default function SocialSidebar(): JSX.Element {
 
   const getUserFriends = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8081/api/friends/${userID}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/${userID}`);
       if (response.ok) {
         const data = await response.json();
         setFriendList(data);
@@ -89,7 +89,8 @@ export default function SocialSidebar(): JSX.Element {
   const handleSendRequest = async () => {
     const userID2 = getIDFromUser(userName2);
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +127,7 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleAcceptFriendRequest = async (requesterID: string) => {
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleRejectFriendRequest = async (requesterID: string) => {
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/friends/requests`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +176,7 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleDeleteFriendRequest = async (receiverID: string) => {
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

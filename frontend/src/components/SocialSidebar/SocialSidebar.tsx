@@ -162,7 +162,7 @@ export default function SocialSidebar(): JSX.Element {
   const handleRejectFriendRequest = async (requesterID: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/friends/requests`,
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`,
         {
           method: 'PATCH',
           headers: {

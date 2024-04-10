@@ -27,9 +27,51 @@ describe('UsersController', () => {
     jest.resetAllMocks();
   });
 
+  describe('userExists', () => {
+    it('should return true for a valid username', async () => {
+      const userID = nanoid();
+      const expectedUser = {
+        id: userID,
+        displayName: nanoid(),
+        signUpDate: new Date(),
+        lastLogin: new Date(),
+        totalTimeSpent: 100,
+        totalGamesPlayed: 5,
+      };
+
+      // Add the user record to the database
+      await prisma.user.create({
+        data: {
+          id: userID,
+          displayName: expectedUser.displayName,
+          signUpDate: expectedUser.signUpDate,
+          lastLogin: expectedUser.lastLogin,
+          totalTimeSpent: expectedUser.totalTimeSpent,
+          totalGamesPlayed: expectedUser.totalGamesPlayed,
+        },
+      });
+
+      // Call the userExists method
+      const result = await usersController.userExists(expectedUser.displayName);
+
+      // Assert the result
+      expect(result).toBe(true);
+    });
+
+    it('should return false for an invalid user ID', async () => {
+      // Mock the necessary dependencies
+      const username = nanoid();
+
+      // Call the userExists method
+      const result = await usersController.userExists(username);
+
+      // Assert the result
+      expect(result).toBe(false);
+    });
+  });
+
   describe('getUserStats', () => {
     it('should return user stats for a valid user ID, no game', async () => {
-      // Mock the necessary dependencies
       const userID = nanoid();
       const sessionToken = 'abc';
       const expectedUserStats = {
@@ -146,7 +188,6 @@ describe('UsersController', () => {
       // Mock the necessary dependencies
       const userID = nanoid();
       const sessionToken = 'abc';
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
 
       // Call the getUserStats method and expect it to throw an error
       await expect(usersController.getUserStats(userID, sessionToken)).rejects.toThrowError();
@@ -155,7 +196,6 @@ describe('UsersController', () => {
 
   describe('listRecentlyVistedTowns', () => {
     it('should return a list of recently visited towns for a valid user ID', async () => {
-      // Mock the necessary dependencies
       const userID = nanoid();
       const firstTown = await townsStore.createTown('firstTown', true);
       const secondTown = await townsStore.createTown('secondTown', true);
@@ -332,7 +372,6 @@ describe('UsersController', () => {
     it('should return an empty list for an invalid user ID', async () => {
       // Mock the necessary dependencies
       const userID = nanoid();
-      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
 
       // Call the listRecentlyVistedTowns method
       const result = await usersController.listRecentlyVistedTowns(userID);

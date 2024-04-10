@@ -12,7 +12,7 @@ const TUTORIAL_STEPS = [
   {
     title: 'Update Your Username',
     description:
-      "Your username is your identity in Covey.Town. When you signed up, you selected a username which is what others will see you as. If you signed up with Google, this will defauly to your google name. If you'd like to change this, this can be done on the home page before entering a town.",
+      "Your username is your identity in Covey.Town. When you signed up, you selected a username which is what others will see you as. If you signed up with Google, this will default to your google name. If you'd like to change this, this can be done on the home page before entering a town.",
   },
   {
     title: 'Join or Create a Town',

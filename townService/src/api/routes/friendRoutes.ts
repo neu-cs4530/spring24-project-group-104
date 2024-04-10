@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../repositories/PrismaClient';
-import * as friendService from '../services/friendService';
+import createFriendship from '../services/friendService';
 
 const router = Router();
 
@@ -177,7 +177,7 @@ router.patch('/requests', async (req: Request, res: Response) => {
     });
 
     if (accept) {
-      await friendService.createFriendship(requesterID, receiverID);
+      await createFriendship(requesterID, receiverID);
       res.status(200).send('Friendship created');
     } else {
       res.status(200).send('Friend request deleted');

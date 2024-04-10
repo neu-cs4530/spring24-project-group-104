@@ -27,6 +27,18 @@ export default function SignUpForm({ onLoginSuccess }: SignUpFormProps): JSX.Ele
   const handleSignUp = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+
+      if (username.includes(' ')) {
+        toast({
+          title: 'Error creating account.',
+          description: 'Username cannot contain spaces.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
       try {
         const userCredential = await signUpWithEmailPasswordAndUsername(username, email, password);
         const displayName = userCredential.user?.displayName;

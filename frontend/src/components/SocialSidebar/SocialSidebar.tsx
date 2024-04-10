@@ -36,7 +36,9 @@ export default function SocialSidebar(): JSX.Element {
 
   const fetchFriendRequests = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8081/api/friends/requests/${userID}`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests/${userID}`,
+      );
       if (response.ok) {
         const data = await response.json();
         setIncomingRequests(data.incoming);
@@ -51,7 +53,9 @@ export default function SocialSidebar(): JSX.Element {
 
   const getUserFriends = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8081/api/friends/${userID}`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/${userID}`,
+      );
       if (response.ok) {
         const data = await response.json();
         setFriendList(data);
@@ -89,16 +93,19 @@ export default function SocialSidebar(): JSX.Element {
   const handleSendRequest = async () => {
     const userID2 = getIDFromUser(userName2);
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userID1: userID,
+            userID2: userID2,
+          }),
         },
-        body: JSON.stringify({
-          userID1: userID,
-          userID2: userID2,
-        }),
-      });
+      );
 
       if (response.ok) {
         fetchFriendRequests();
@@ -126,17 +133,20 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleAcceptFriendRequest = async (requesterID: string) => {
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            requesterID,
+            receiverID: userID,
+            accept: true,
+          }),
         },
-        body: JSON.stringify({
-          requesterID,
-          receiverID: userID,
-          accept: true,
-        }),
-      });
+      );
 
       if (response.ok) {
         fetchFriendRequests();
@@ -151,17 +161,20 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleRejectFriendRequest = async (requesterID: string) => {
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/friends/requests`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            requesterID,
+            receiverID: userID,
+            accept: false,
+          }),
         },
-        body: JSON.stringify({
-          requesterID,
-          receiverID: userID,
-          accept: false,
-        }),
-      });
+      );
 
       if (response.ok) {
         fetchFriendRequests();
@@ -175,17 +188,20 @@ export default function SocialSidebar(): JSX.Element {
 
   const handleDeleteFriendRequest = async (receiverID: string) => {
     try {
-      const response = await fetch('http://localhost:8081/api/friends/requests', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL}/api/friends/requests`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            requesterID: userID,
+            receiverID,
+            accept: false,
+          }),
         },
-        body: JSON.stringify({
-          requesterID: userID,
-          receiverID,
-          accept: false,
-        }),
-      });
+      );
 
       if (response.ok) {
         fetchFriendRequests();

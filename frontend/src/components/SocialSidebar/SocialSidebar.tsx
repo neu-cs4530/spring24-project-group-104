@@ -92,9 +92,9 @@ export default function SocialSidebar(): JSX.Element {
   };
 
   useEffect(() => {
-    if(isTextareaFocused){
+    if(isTextareaFocused) {
       coveyTownController.pause();
-    }else{
+    } else {
       coveyTownController.unPause();
     }
   }, [isTextareaFocused, coveyTownController]);

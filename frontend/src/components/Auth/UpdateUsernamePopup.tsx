@@ -17,7 +17,6 @@ import {
 import { updateUsername } from '../../auth/firebaseAuth';
 import useLoginController from '../../hooks/useLoginController';
 
-
 interface UsernameUpdatePopupProps {
   userName: string;
   setUserName: (newUserName: string) => void;
@@ -34,18 +33,17 @@ export default function UsernameUpdatePopup({
   const toast = useToast();
 
   const handleUsernameUpdate = async () => {
-
     const usernameExists = await usersService.userExists(tempUsername);
-      if (usernameExists) {
-        toast({
-          title: 'Error creating account.',
-          description: 'Username in use, please select another one.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
+    if (usernameExists) {
+      toast({
+        title: 'Error creating account.',
+        description: 'Username in use, please select another one.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
     if (tempUsername.includes(' ')) {
       toast({
         title: 'Error creating account.',
